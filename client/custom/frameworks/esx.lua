@@ -10,10 +10,28 @@ function IsPlayerLoaded()
   return ESX.IsPlayerLoaded();
 end
 
-function Notify(msg, type)
-  lib.notify({
-    title = Locale["Sling"],
-    description = msg,
-    type = type
-  })
-end
+RegisterNetEvent("esx:addInventoryItem")
+AddEventHandler("esx:addInventoryItem", function(item)
+  for k, v in pairs(Config.Weapons) do
+    if item == k then
+      Sling.cachedWeapons[item] = v
+      Sling.cachedWeapons[item].attachments = Inventory:GetWeaponAttachment(item)
+      break;
+    end
+  end
+end)
+
+RegisterNetEvent("esx:removeInventoryItem")
+AddEventHandler("esx:removeInventoryItem", function(item)
+  for k, v in pairs(Config.Weapons) do
+    if item == k then
+      Sling.cachedWeapons[item] = nil
+      if Sling.cachedAttachments[item] then
+        if DoesEntityExist(Sling.cachedAttachments[item].obj) then
+          DeleteEntity(Sling.cachedAttachments[item].obj)
+        end
+      end
+      break;
+    end
+  end
+end)

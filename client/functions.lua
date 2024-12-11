@@ -30,6 +30,7 @@ function Sling:InitSling()
     for key, val in pairs(Config.Weapons) do
       if v.name == key then
         Sling.cachedWeapons[key] = val
+        Sling.cachedWeapons[key].attachments = Inventory:GetWeaponAttachment(key)
         break;
       end
     end
@@ -52,9 +53,9 @@ function Sling:InitSling()
       if selected == 1 then
         for key, val in pairs(Config.Weapons) do
           if key == args[scrollIndex] then
-            Sling.data.weapon = Config.Weapons[key].model
+            Sling.data.weapon = val.model
             Sling.data.weaponName = key
-            Sling.data.weaponHash = Config.Weapons[key].name
+            Sling.data.weaponHash = val.name
             break;
           end
         end
@@ -80,31 +81,6 @@ function Sling:InitSling()
   end)
 end
 
-RegisterNetEvent("esx:addInventoryItem")
-AddEventHandler("esx:addInventoryItem", function(item)
-  for k, v in pairs(Config.Weapons) do
-    if item == k then
-      Sling.cachedWeapons[item] = v
-      break;
-    end
-  end
-end)
-
-RegisterNetEvent("esx:removeInventoryItem")
-AddEventHandler("esx:removeInventoryItem", function(item)
-  for k, v in pairs(Config.Weapons) do
-    if item == k then
-      Sling.cachedWeapons[item] = nil
-      if Sling.cachedAttachments[item] then
-        if DoesEntityExist(Sling.cachedAttachments[item].obj) then
-          DeleteEntity(Sling.cachedAttachments[item].obj)
-        end
-      end
-      break;
-    end
-  end
-end)
-
 function Sling:WeaponThread()
   CreateThread(function()
     while true do
@@ -122,8 +98,15 @@ function Sling:WeaponThread()
         else
           if Sling.cachedPositions[weaponName] and not DoesEntityExist(Sling.cachedAttachments[weaponName].obj) then
             local coords = Sling.cachedPositions[weaponName]
-            local weaponObject = CreateObject(weaponVal.model, coords.coords.x, coords.coords.y, coords.coords.z, true,
-              true, true)
+            -- local weaponObject = CreateObject(weaponVal.model, coords.coords.x, coords.coords.y, coords.coords.z, true,
+            --   true, true)
+            local weaponObject = CreateWeaponObject(weaponVal.name, 0, coords.coords.x, coords.coords.y, coords.coords
+              .z,
+              true,
+              1.0, 0)
+            for _, component in pairs(weaponVal.attachments) do
+              GiveWeaponComponentToWeaponObject(weaponObject, component)
+            end
 
             AttachEntityToEntity(weaponObject, playerPed, GetPedBoneIndex(playerPed, 24816), coords.coords.x,
               coords.coords.y, coords.coords.z, coords.rot.x, coords.rot.y, coords.rot.z,
@@ -132,9 +115,15 @@ function Sling:WeaponThread()
           end
 
           if not Sling.cachedPositions[weaponName] and not DoesEntityExist(Sling.cachedAttachments[weaponName].obj) then
-            local weaponObject = CreateObject(weaponVal.model, 0.0, 0.0, 0.0,
+            -- local weaponObject = CreateObject(weaponVal.model, 0.0, 0.0, 0.0,
+            --   true,
+            --   true, true)
+            local weaponObject = CreateWeaponObject(weaponVal.name, 0, 0.0, 0.0, 0.0,
               true,
-              true, true)
+              1.0, 0)
+            for _, component in pairs(weaponVal.attachments) do
+              GiveWeaponComponentToWeaponObject(weaponObject, component)
+            end
             AttachEntityToEntity(weaponObject, playerPed, GetPedBoneIndex(playerPed, 24816), 0.0,
               -0.15, 0.0, 0.0, 0.0, 0.0,
               true, true, false, true, 2, true)

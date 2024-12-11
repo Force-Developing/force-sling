@@ -26,9 +26,9 @@ end
 function Sling:LoadInventory()
   if Config.Inventory ~= "auto" then return end;
 
-  if GetResourceState("qs_inventory") ~= "missing" then
-    Config.Inventory = "qs_inventory"
-    Sling:Debug("info", "Inventory set to qs_inventory")
+  if GetResourceState("qs-inventory") ~= "missing" then
+    Config.Inventory = "qs-inventory"
+    Sling:Debug("info", "Inventory set to qs-inventory")
   elseif GetResourceState("qb_inventory") ~= "missing" then
     Config.Inventory = "qb_inventory"
     Sling:Debug("info", "Inventory set to qb_inventory")
