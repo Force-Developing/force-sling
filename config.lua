@@ -1,14 +1,19 @@
 Config = {}
 
--- Enable debug mode
+-- Enable or disable debug mode
+-- @field [boolean] Debug - Set to true to enable debug mode, false to disable
 Config.Debug = true
 
 -- Set the locale for the application
-Config.Locale = "en" -- "ar", "en", "es", "fr", "pt", "de", "nl", "pl", "ru", "sv" or "auto"
+-- @field [string] Locale - Language code for the locale ("ar", "en", "es", "fr", "pt", "de", "nl", "pl", "ru", "sv" or "auto")
+Config.Locale = "en"
 
--- Admin configuration
+-- Admin configuration settings
+-- @field [table] Admin - Configuration for admin settings
+-- @field [table] Admin.Global - Global admin settings
+-- @field [boolean] Admin.Global.enabled - Enable or disable global admin commands
+-- @field [table] Admin.Global.players - List of player identifiers with admin access
 Config.Admin = {
-  -- When disabled, the commands will be utilizing ACL. Remember to change permission on the commands to the correct ace group
   Global = {
     enabled = true,
     players = {
@@ -18,37 +23,55 @@ Config.Admin = {
   }
 }
 
--- Framework configuration
+-- Framework configuration settings
+-- @field [table] Framework - Configuration for the framework
+-- @field [string] Framework.name - Name of the framework ("esx", "qbcore", "custom" or "auto")
+-- @field [string] Framework.resource - Resource name for ESX or QBCore
 Config.Framework = {
-  name = "auto",           -- esx, qbcore, custom or auto
-  resource = "es_extended" -- Resource name for ESX or QBCore
+  name = "auto",
+  resource = "es_extended"
 }
 
--- Inventory configuration
-Config.Inventory =
-"auto"                             -- none (Original weapon wheel), auto, qs-inventory, qb-inventory, core_inventory, ox_inventory or custom
-Config.UseWeaponAttachments = true -- May not work with all inventory systems and lower performance
+-- Inventory configuration settings
+-- @field [string] Inventory - Inventory system to use ("none", "auto", "qs-inventory", "qb-inventory", "core_inventory", "ox_inventory" or "custom")
+-- @field [boolean] UseWeaponAttachments - Enable or disable weapon attachments (may not work with all inventory systems and may lower performance)
+Config.Inventory = "auto"
+Config.UseWeaponAttachments = true
 
--- Command configuration
+-- Command configuration settings
+-- @field [table] Command - Configuration for the sling command
+-- @field [string] Command.name - Name of the command
+-- @field [string] Command.description - Description of the command
+-- @field [string] Command.permission - Permission level required to use the command ("any" or specific permission)
 Config.Command = {
   name = "sling",
   description = "Configure weapon positions",
   permission = "any"
 }
 
--- Preset command configuration
+-- Preset command configuration settings
+-- @field [table] Presets - Configuration for the sling preset command
+-- @field [string] Presets.command - Name of the preset command
+-- @field [string] Presets.permission - Permission level required to use the preset command ("global" or specific permission)
 Config.Presets = {
   command = "slingpreset",
   permission = "global"
 }
 
--- Bone configuration
+-- Bone configuration settings
+-- @field [table] Bones - Configuration for weapon attachment bones
+-- @field [number] Bones.Back - Bone ID for back attachment
+-- @field [number] Bones.Front - Bone ID for front attachment
 Config.Bones = {
   ["Back"] = 24816,
   ["Front"] = 10706
 }
 
--- Editable Weapon configuration
+-- Editable weapon configuration settings
+-- @field [table] Weapons - Configuration for editable weapons
+-- @field [table] Weapons[weapon_name] - Configuration for a specific weapon
+-- @field [string] Weapons[weapon_name].model - Model name for the weapon
+-- @field [string] Weapons[weapon_name].name - Internal name for the weapon
 Config.Weapons = {
   ["weapon_pistol50"] = { model = `w_pi_pistol50`, name = `weapon_pistol50` },
   ["weapon_pistol"] = { model = `w_pi_pistol`, name = `weapon_pistol` },

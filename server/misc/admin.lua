@@ -1,8 +1,14 @@
 Admin = {}
 
 --- Checks if a player is an admin.
+---
+--- This function determines if a player is an admin by checking their Discord roles
+--- and global configuration settings.
+---
 --- @param target number The target player.
---- @return table A table containing isAdmin and adminType.
+--- @return table A table containing:
+--- - `isAdmin` (boolean): Whether the player is an admin.
+--- - `adminType` (string): The type of admin ("none" or "global").
 function Admin:IsPlayerAdmin(target)
   Sling:Debug("info", "Checking if player is admin for target: " .. tostring(target))
   local isAdmin = false
@@ -44,6 +50,10 @@ function Admin:IsPlayerAdmin(target)
 end
 
 --- Gets a player's identifier.
+---
+--- This function retrieves a specific type of identifier for a given player.
+--- It logs the process of finding the identifier and returns the identifier if found.
+---
 --- @param target number The target player.
 --- @param identifierType string The type of identifier to get.
 --- @return string | nil The player's identifier.

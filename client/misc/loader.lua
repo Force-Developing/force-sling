@@ -1,4 +1,3 @@
---- Initializes the framework based on the configuration.
 function Sling:InitFramework()
   Sling:Debug("info", "Initializing framework")
   if Config.Framework.name == "auto" then
@@ -22,7 +21,6 @@ function Sling:InitFramework()
   Sling:Debug("info", "Framework initialized: " .. Config.Framework.name)
 end
 
---- Initializes the main functionality of Sling.
 function Sling:LoadInventory()
   if Config.Inventory ~= "auto" then return end;
 
