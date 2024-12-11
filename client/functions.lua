@@ -25,16 +25,7 @@ end
 
 function Sling:InitSling()
   Sling.cachedPositions = lib.callback.await("force-sling:callback:getCachedPositions", false)
-  local userInventory = exports['qs-inventory']:getUserInventory()
-  for k, v in pairs(userInventory) do
-    for key, val in pairs(Config.Weapons) do
-      if v.name == key then
-        Sling.cachedWeapons[key] = val
-        Sling.cachedWeapons[key].attachments = Inventory:GetWeaponAttachment(key)
-        break;
-      end
-    end
-  end
+  Sling.cachedWeapons = Inventory:GetWeapons()
   Sling:WeaponThread()
 
   local function loadWeaponOptions()
@@ -87,6 +78,7 @@ function Sling:WeaponThread()
       local playerPed = PlayerPedId()
       local weapon = GetSelectedPedWeapon(playerPed)
       for weaponName, weaponVal in pairs(Sling.cachedWeapons) do
+        print(weaponName)
         if not Sling.cachedAttachments[weaponName] then
           Sling.cachedAttachments[weaponName] = {}
         end
