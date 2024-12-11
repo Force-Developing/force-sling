@@ -1,0 +1,11 @@
+{
+  "sling": "Pasek",
+  "slingConfig": "Konfiguracja paska",
+  "currentPosition": "Aktualna pozycja",
+  "up": "Góra",
+  "down": "Dół",
+  "move": "Przesuń",
+  "rotate": "Obróć",
+  "speed": "Prędkość",
+  "confirm": "Potwierdź"
+}

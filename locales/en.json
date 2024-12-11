@@ -1,0 +1,11 @@
+{
+  "sling": "Sling",
+  "slingConfig": "Sling Configuration",
+  "currentPosition": "Current Position",
+  "up": "Up",
+  "down": "Down",
+  "move": "Move",
+  "rotate": "Rotate",
+  "speed": "Speed",
+  "confirm": "Confirm"
+}

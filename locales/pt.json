@@ -1,0 +1,11 @@
+{
+  "sling": "Alça",
+  "slingConfig": "Configuração da alça",
+  "currentPosition": "Posição atual",
+  "up": "Cima",
+  "down": "Baixo",
+  "move": "Mover",
+  "rotate": "Girar",
+  "speed": "Velocidade",
+  "confirm": "Confirmar"
+}

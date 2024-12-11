@@ -1,0 +1,11 @@
+{
+  "sling": "Schlinge",
+  "slingConfig": "Schlingenkonfiguration",
+  "currentPosition": "Aktuelle Position",
+  "up": "Oben",
+  "down": "Unten",
+  "move": "Bewegen",
+  "rotate": "Drehen",
+  "speed": "Geschwindigkeit",
+  "confirm": "Bestätigen"
+}

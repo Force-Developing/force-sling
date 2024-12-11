@@ -36,10 +36,13 @@ client_scripts {
     "client/events.lua",
     "client/functions.lua",
     "client/misc/loader.lua",
-    "locales/*.lua",
     "client/main.lua",
     "client/callbacks.lua",
     "client/custom/frameworks/*.lua",
     "client/custom/*.lua",
     "client/misc/*.lua",
+}
+
+files {
+    "locales/*.json",
 }

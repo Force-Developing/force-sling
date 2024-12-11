@@ -1,0 +1,11 @@
+{
+  "sling": "Draagband",
+  "slingConfig": "Draagbandconfiguratie",
+  "currentPosition": "Huidige positie",
+  "up": "Omhoog",
+  "down": "Omlaag",
+  "move": "Verplaatsen",
+  "rotate": "Draaien",
+  "speed": "Snelheid",
+  "confirm": "Bevestigen"
+}

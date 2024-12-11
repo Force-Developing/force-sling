@@ -1,0 +1,11 @@
+{
+  "sling": "Sele",
+  "slingConfig": "Selekonfiguration",
+  "currentPosition": "Nuvarande position",
+  "up": "Upp",
+  "down": "Ner",
+  "move": "Flytta",
+  "rotate": "Rotera",
+  "speed": "Hastighet",
+  "confirm": "Bekräfta"
+}

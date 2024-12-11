@@ -1,0 +1,11 @@
+{
+  "sling": "Eslinga",
+  "slingConfig": "Configuración de eslinga",
+  "currentPosition": "Posición actual",
+  "up": "Arriba",
+  "down": "Abajo",
+  "move": "Mover",
+  "rotate": "Girar",
+  "speed": "Velocidad",
+  "confirm": "Confirmar"
+}

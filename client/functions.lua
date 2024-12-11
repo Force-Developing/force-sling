@@ -12,13 +12,10 @@ Sling = {
     object = nil,
   }
 }
-Locales = {}
+
 --- Initializes the main functionality of Sling.
 function Sling:InitMain()
   Sling:Debug("info", "Initializing main thread")
-
-  -- Initialize locale
-  Sling:InitLocale()
 
   Sling:InitSling()
   Sling:InitCommands()
@@ -49,7 +46,7 @@ function Sling:InitSling()
 
   lib.registerMenu({
     id = 'sling_select',
-    title = Locale["slingConfig"],
+    title = locale("slingConfig"),
     position = 'top-right',
     onSideScroll = function(selected, scrollIndex, args)
       if selected == 1 then
@@ -343,10 +340,6 @@ function Sling:StartPositioning()
           true, true, false, true, 2, true)
       end
 
-      -- math.clamp(coords.position.x, -0.2, 0.2)
-      -- math.clamp(coords.position.y, -0.2, 0.2)
-      -- math.clamp(coords.position.z, -0.2, 0.2)
-
       local x, y, z = table.unpack(coords.position)
       local xRot, yRot, zRot = table.unpack(coords.rotation)
       local text = "pos: (" ..
@@ -356,14 +349,14 @@ function Sling:StartPositioning()
           "," ..
           math.round(z, 2) ..
           ") | rot: (" .. math.round(xRot, 2) .. "," .. math.round(yRot, 2) .. "," .. math.round(zRot, 2) .. ")"
-      lib.showTextUI(("Current Positioning: %s"):format(text) ..
+      lib.showTextUI((locale("currentPosition") .. ": %s"):format(text) ..
         '  \n  ' ..
-        '[QE]    - Up/Down  \n' ..
-        '[Arrows] - Move, XY  \n' ..
-        '[Scroll]- Rotate  \n' ..
-        '[GH]    - Rotate  \n' ..
-        '[Shift] - Speed  \n' ..
-        '[ENTER] - Done  \n')
+        '[QE]    - ' .. locale("up") .. '/' .. locale("down") .. '  \n' ..
+        '[Arrows] - ' .. locale("move") .. ', XY  \n' ..
+        '[Scroll]- ' .. locale("rotate") .. '  \n' ..
+        '[GH]    - ' .. locale("rotate") .. ' Z  \n' ..
+        '[Shift] - ' .. locale("speed") .. '  \n' ..
+        '[ENTER] - ' .. locale("confirm") .. '  \n')
 
       DisableControls()
 

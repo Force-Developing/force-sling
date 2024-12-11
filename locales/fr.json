@@ -1,0 +1,11 @@
+{
+  "sling": "Sangle",
+  "slingConfig": "Configuration de la sangle",
+  "currentPosition": "Position actuelle",
+  "up": "Haut",
+  "down": "Bas",
+  "move": "Déplacer",
+  "rotate": "Pivoter",
+  "speed": "Vitesse",
+  "confirm": "Confirmer"
+}

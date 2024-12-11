@@ -4,7 +4,7 @@ Config = {}
 Config.Debug = true
 
 -- Set the locale for the application
-Config.Locale = "en" -- "ar", "en", "es", "fr", "pt", "de", "nl", "pl", "ru", "se" or "auto"
+Config.Locale = "en" -- "ar", "en", "es", "fr", "pt", "de", "nl", "pl", "ru", "sv" or "auto"
 
 -- Admin configuration
 Config.Admin = {

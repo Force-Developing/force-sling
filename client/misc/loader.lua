@@ -1,6 +1,3 @@
--- Localization
-Locale = Config.Locale
-
 --- Initializes the framework based on the configuration.
 function Sling:InitFramework()
   Sling:Debug("info", "Initializing framework")
@@ -23,20 +20,6 @@ function Sling:InitFramework()
     end
   end
   Sling:Debug("info", "Framework initialized: " .. Config.Framework.name)
-end
-
---- Initializes the locale based on the configuration.
-function Sling:InitLocale()
-  Sling:Debug("info", "Initializing locale")
-  if Config.Locale == "auto" then
-    local serverLocale = string.sub(GetConvar('locale', 'se'), 3)
-    Locale = Locales[serverLocale ~= '' and serverLocale or 'en']
-    Sling:Debug("info", "Locale set to " .. (serverLocale ~= '' and serverLocale or 'en'))
-  else
-    Locale = Locales[Config.Locale ~= '' and Config.Locale or 'en']
-    Sling:Debug("info", "Locale set to " .. (Config.Locale ~= '' and Config.Locale or 'en'))
-  end
-  Sling:Debug("info", "Locale initialized: " .. Config.Locale)
 end
 
 --- Initializes the main functionality of Sling.
