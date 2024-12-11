@@ -1,0 +1,40 @@
+Locales["ar"] = {
+  currency = "usd",
+  currencyFormat = "en-US",
+
+  maxUnits = "لقد وصلت إلى الحد الأقصى لوحدات التخزين",
+  buyStorage = "شراء التخزين: $%s",
+  duplicateKey = "مفتاح مكرر",
+  openStorage = "فتح التخزين",
+  upgrade = "ترقية: $%s",
+  sell = "بيع: $%s",
+  notEnoughMoney = "ليس لديك ما يكفي من المال",
+
+  storageCreator = "منشئ التخزين",
+  create = "إنشاء",
+  cancel = "إلغاء",
+
+  street = "شارع",
+  coords = "الإحداثيات",
+  price = "السعر",
+  capacity = "السعة",
+  slots = "الفتحات",
+  upgradeable = "قابل للترقية",
+  weight = "الوزن (جم)",
+
+  unitUpgraded = "تمت ترقية الوحدة إلى المستوى %s",
+  unitSold = "لقد بعت للتو وحدة تخزين",
+  unitNotSold = "حدث خطأ ما، لم يتم بيع الوحدة",
+  buyUnit = "شراء",
+  unitBought = "تم شراء الوحدة",
+  boughtUnit = "لقد اشتريت وحدة تخزين",
+  storageUnit = "وحدة تخزين",
+  Sling = "وحدات التخزين",
+
+  warehouse = "المستودع",
+  warehouseCreator = "منشئ المستودع",
+  selectWarehouse = "اختر المستودع",
+  buyWarehouse = "شراء المستودع: $%s",
+  enterWarehouse = "دخول المستودع",
+  exitWarehouse = "خروج المستودع",
+}

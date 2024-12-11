@@ -1,0 +1,40 @@
+Locales["ru"] = {
+  currency = "usd",
+  currencyFormat = "en-US",
+
+  maxUnits = "Вы достигли максимального количества складских единиц",
+  buyStorage = "Купить хранилище: $%s",
+  duplicateKey = "Дубликат ключа",
+  openStorage = "Открыть хранилище",
+  upgrade = "Улучшить: $%s",
+  sell = "Продать: $%s",
+  notEnoughMoney = "У вас недостаточно денег",
+
+  storageCreator = "Создатель хранилища",
+  create = "Создать",
+  cancel = "Отмена",
+
+  street = "Улица",
+  coords = "Координаты",
+  price = "Цена",
+  capacity = "Вместимость",
+  slots = "Слоты",
+  upgradeable = "Улучшение возможно",
+  weight = "Вес (г)",
+
+  unitUpgraded = "Единица обновлена до уровня %s",
+  unitSold = "Вы только что продали складскую единицу",
+  unitNotSold = "Что-то пошло не так, единица не была продана",
+  buyUnit = "Купить",
+  unitBought = "Единица куплена",
+  boughtUnit = "Вы только что купили складскую единицу",
+  storageUnit = "Складская единица",
+  Sling = "Складские единицы",
+
+  warehouse = "Склад",
+  warehouseCreator = "Создатель склада",
+  selectWarehouse = "Выбрать склад",
+  buyWarehouse = "Купить склад: $%s",
+  enterWarehouse = "Войти на склад",
+  exitWarehouse = "Выйти со склада",
+}

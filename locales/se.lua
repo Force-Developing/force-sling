@@ -1,0 +1,40 @@
+Locales["se"] = {
+  currency = "usd",
+  currencyFormat = "en-US",
+
+  maxUnits = "Du har nått det maximala antalet lagringsenheter",
+  buyStorage = "Köp lagring: %skr",
+  duplicateKey = "Duplicerad nyckel",
+  openStorage = "Öppna lagring",
+  upgrade = "Uppgradera: %skr",
+  sell = "Sälj: %skr",
+  notEnoughMoney = "Du har inte tillräckligt med pengar",
+
+  storageCreator = "Lagringsskapare",
+  create = "Skapa",
+  cancel = "Avbryt",
+
+  street = "Gata",
+  coords = "Koordinater",
+  price = "Pris",
+  capacity = "Kapacitet",
+  slots = "Platser",
+  upgradeable = "Uppgraderbar",
+  weight = "Vikt (G)",
+
+  unitUpgraded = "Enheten har uppgraderats till nivå %s",
+  unitSold = "Du har sålt en lagringsenhet",
+  unitNotSold = "Något gick fel, enheten såldes inte",
+  buyUnit = "Köp",
+  unitBought = "Enheten är köpt",
+  boughtUnit = "Du har köpt en lagringsenhet",
+  storageUnit = "Lagringsenhet",
+  Sling = "Lagringsenheter",
+
+  warehouse = "Lager",
+  warehouseCreator = "Lagerskapare",
+  selectWarehouse = "Välj lager",
+  buyWarehouse = "Köp lager: %skr",
+  enterWarehouse = "Gå in i lagret",
+  exitWarehouse = "Gå ut ur lagret",
+}

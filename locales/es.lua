@@ -1,0 +1,40 @@
+Locales["es"] = {
+  currency = "usd",
+  currencyFormat = "en-US",
+
+  maxUnits = "Has alcanzado el número máximo de unidades de almacenamiento",
+  buyStorage = "Comprar almacenamiento: $%s",
+  duplicateKey = "Clave duplicada",
+  openStorage = "Abrir almacenamiento",
+  upgrade = "Mejorar: $%s",
+  sell = "Vender: $%s",
+  notEnoughMoney = "No tienes suficiente dinero",
+
+  storageCreator = "Creador de almacenamiento",
+  create = "Crear",
+  cancel = "Cancelar",
+
+  street = "Calle",
+  coords = "Coordenadas",
+  price = "Precio",
+  capacity = "Capacidad",
+  slots = "Espacios",
+  upgradeable = "Mejorable",
+  weight = "Peso (G)",
+
+  unitUpgraded = "Unidad mejorada al nivel %s",
+  unitSold = "Acabas de vender una unidad de almacenamiento",
+  unitNotSold = "Algo salió mal, la unidad no se vendió",
+  buyUnit = "Comprar",
+  unitBought = "Unidad comprada",
+  boughtUnit = "Acabas de comprar una unidad de almacenamiento",
+  storageUnit = "Unidad de almacenamiento",
+  Sling = "Unidades de almacenamiento",
+
+  warehouse = "Almacén",
+  warehouseCreator = "Creador de almacén",
+  selectWarehouse = "Seleccionar almacén",
+  buyWarehouse = "Comprar almacén: $%s",
+  enterWarehouse = "Entrar al almacén",
+  exitWarehouse = "Salir del almacén",
+}
