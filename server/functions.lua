@@ -23,13 +23,17 @@ function Sling:LoadServerCallbacks()
     return Admin:IsPlayerAdmin(target)
   end)
 
+  -- Register callback to get cached positions
   lib.callback.register("force-sling:callback:getCachedPositions", function(source)
     local identifier = GetPlayerIdentifierByType(source, "license")
     local positions = json.decode(LoadResourceFile(GetCurrentResourceName(), "json/positions.json")) or {}
+    Sling:Debug("info", "Returning cached positions for identifier: " .. tostring(identifier))
     return positions[identifier] or {}
   end)
 
+  -- Register callback to get cached presets
   lib.callback.register("force-sling:callback:getCachedPresets", function()
+    Sling:Debug("info", "Returning cached presets")
     return json.decode(LoadResourceFile(GetCurrentResourceName(), "json/presets.json")) or {}
   end)
 

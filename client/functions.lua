@@ -165,7 +165,6 @@ function Sling:OnPositioningDone(coords)
   local distanceFromMiddle = #(coords.position - vector3(0.0, 0.0, 0.0))
   local distanceFromMiddle2 = #(coords.position - vector3(0.0, 0.0, -0.2))
   local distanceFromMiddle3 = #(coords.position - vector3(0.0, 0.0, 0.2))
-  print(distanceFromMiddle, distanceFromMiddle2, distanceFromMiddle3)
   if distanceFromMiddle < 0.14 or distanceFromMiddle2 < 0.14 or distanceFromMiddle3 < 0.14 then
     coords.position = vector3(coords.position.x, 0.17, coords.position.z)
   end

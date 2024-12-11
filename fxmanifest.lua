@@ -3,7 +3,7 @@ lua54 'yes'
 game "gta5"
 
 author 'Force Developments <discord:@force3883>'
-description 'Sling for ESX, QBCore and custom frameworks'
+description 'Fivem Sling system for ESX, QBCore and custom frameworks'
 version '1.0.0'
 
 -- Dependencies
@@ -13,36 +13,36 @@ dependencies {
 
 -- Shared scripts
 shared_scripts {
-    '@ox_lib/init.lua',
-    "config.lua",
+    '@ox_lib/init.lua', -- Initialization script for ox_lib
+    "config.lua",       -- Configuration file
 }
 
 -- Server scripts
 server_scripts {
-    'version.lua',
+    'version.lua',            -- Version control script
 
-    "server/events.lua",
-    "server/functions.lua",
-    "server/misc/loader.lua",
-    "server/main.lua",
-    "server/custom/frameworks/*.lua",
-    "server/custom/*.lua",
-    "server/misc/*.lua"
+    "server/events.lua",      -- Server-side event handlers
+    "server/functions.lua",   -- Server-side functions
+    "server/misc/loader.lua", -- Miscellaneous loader script
+    "server/main.lua",        -- Main server script
+    "server/custom/*.lua",    -- Other custom server scripts
+    "server/misc/*.lua"       -- Miscellaneous server scripts
 }
 
 -- Client scripts
 client_scripts {
-    "client/utils.lua",
-    "client/events.lua",
-    "client/functions.lua",
-    "client/misc/loader.lua",
-    "client/main.lua",
-    "client/callbacks.lua",
-    "client/custom/frameworks/*.lua",
-    "client/custom/*.lua",
-    "client/misc/*.lua",
+    "client/utils.lua",               -- Client-side utility functions
+    "client/events.lua",              -- Client-side event handlers
+    "client/functions.lua",           -- Client-side functions
+    "client/misc/loader.lua",         -- Miscellaneous loader script
+    "client/main.lua",                -- Main client script
+    "client/callbacks.lua",           -- Client-side callback handlers
+    "client/custom/frameworks/*.lua", -- Custom framework scripts
+    "client/custom/*.lua",            -- Other custom client scripts
+    "client/misc/*.lua",              -- Miscellaneous client scripts
 }
 
+-- Files to be included
 files {
-    "locales/*.json",
+    "locales/*.json", -- Localization files
 }

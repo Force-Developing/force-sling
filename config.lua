@@ -8,7 +8,7 @@ Config.Locale = "en" -- "ar", "en", "es", "fr", "pt", "de", "nl", "pl", "ru", "s
 
 -- Admin configuration
 Config.Admin = {
-  -- enabled = true, -- When disabled the commands will be utilizing ACL remember to change permission on the commands to the correct ace group
+  -- When disabled, the commands will be utilizing ACL. Remember to change permission on the commands to the correct ace group
   Global = {
     enabled = true,
     players = {
@@ -24,28 +24,31 @@ Config.Framework = {
   resource = "es_extended" -- Resource name for ESX or QBCore
 }
 
--- Inventory
+-- Inventory configuration
 Config.Inventory =
 "auto"                             -- none (Original weapon wheel), auto, qs-inventory, qb_inventory, core_inventory, ox_inventory or custom
 Config.UseWeaponAttachments = true -- May not work with all inventory systems and lower performance
 
+-- Command configuration
 Config.Command = {
   name = "sling",
   description = "Configure weapon positions",
   permission = "any"
 }
 
+-- Preset command configuration
 Config.Presets = {
   command = "slingpreset",
   permission = "global"
 }
 
+-- Bone configuration
 Config.Bones = {
   ["Back"] = 24816,
   ["Front"] = 10706
 }
 
--- Editible Weapon
+-- Editable Weapon configuration
 Config.Weapons = {
   ["weapon_pistol50"] = { model = `w_pi_pistol50`, name = `weapon_pistol50` },
   ["weapon_pistol"] = { model = `w_pi_pistol`, name = `weapon_pistol` },
@@ -110,5 +113,4 @@ Config.Weapons = {
   ["weapon_stone_hatchet"] = { model = `w_me_stonehatchet`, name = `weapon_stone_hatchet` },
   ["weapon_wrench"] = { model = `w_me_wrench`, name = `weapon_wrench` },
   ["weapon_candycane"] = { model = `w_me_candy_xm3`, name = `weapon_candycane` },
-
 }
