@@ -3,6 +3,6 @@
 .vscode/*
 !.vscode/extensions.json
 !.vscode/settings.json
-
-# Ignore FiveM Server Data
 /src/node_modules
+.vscode/*
+.vscode/settings.json
