@@ -8,6 +8,7 @@ Config.Locale = "en" -- "ar", "en", "es", "fr", "pt", "de", "nl", "pl", "ru", "s
 
 -- Admin configuration
 Config.Admin = {
+  -- enabled = true, -- When disabled the commands will be utilizing ACL remember to change permission on the commands to the correct ace group
   Global = {
     enabled = true,
     players = {
@@ -32,6 +33,16 @@ Config.Command = {
   name = "sling",
   description = "Configure weapon positions",
   permission = "any"
+}
+
+Config.Presets = {
+  command = "slingpreset",
+  permission = "global"
+}
+
+Config.Bones = {
+  ["Back"] = 24816,
+  ["Front"] = 10706
 }
 
 -- Editible Weapon

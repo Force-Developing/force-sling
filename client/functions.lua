@@ -1,5 +1,8 @@
 Sling = {
+  isPreset = false,
+
   cachedPositions = {},
+  cachedPresets = {},
   cachedWeapons = {},
   cachedAttachments = {},
 
@@ -8,6 +11,7 @@ Sling = {
     weapon = nil,
     weaponName = nil,
     weaponHash = nil,
+    boneId = nil,
 
     object = nil,
   }
@@ -25,8 +29,17 @@ end
 
 function Sling:InitSling()
   Sling.cachedPositions = lib.callback.await("force-sling:callback:getCachedPositions", false)
+  Sling.cachedPresets = lib.callback.await("force-sling:callback:getCachedPresets", false)
   Sling.cachedWeapons = Inventory:GetWeapons()
   Sling:WeaponThread()
+
+  local function loadBoneOptions()
+    local bones = {}
+    for boneName, _ in pairs(Config.Bones) do
+      table.insert(bones, boneName)
+    end
+    return bones
+  end
 
   local function loadWeaponOptions()
     local weapons = {}
@@ -42,6 +55,13 @@ function Sling:InitSling()
     position = 'top-right',
     onSideScroll = function(selected, scrollIndex, args)
       if selected == 1 then
+        for key, val in pairs(Config.Bones) do
+          if key == args[scrollIndex] then
+            Sling.data.boneId = val
+            break;
+          end
+        end
+      elseif selected == 2 then
         for key, val in pairs(Config.Weapons) do
           if key == args[scrollIndex] then
             Sling.data.weapon = val.model
@@ -59,15 +79,18 @@ function Sling:InitSling()
       Sling.inPositioning = false;
     end,
     options = {
+      { label = 'Bone',    values = loadBoneOptions(),   args = loadBoneOptions() },
       { label = 'Weapon',  values = loadWeaponOptions(), args = loadWeaponOptions() },
       { label = 'Continue' },
     }
   }, function(selected, scrollIndex, args)
-    if not Sling.data.weapon or not Sling.data.weaponName then
+    if not Sling.data.weapon or not Sling.data.weaponName or not Sling.data.boneId then
       Sling.data.weapon = `w_pi_pistol50`
       Sling.data.weaponName = "weapon_pistol50"
+      Sling.data.boneId = 24816
     end;
     Sling:Debug("info", "Selected weapon: " .. Sling.data.weapon)
+    Sling:Debug("info", "Selected bone: " .. Sling.data.boneId)
     Sling:StartPositioning()
   end)
 end
@@ -78,7 +101,6 @@ function Sling:WeaponThread()
       local playerPed = PlayerPedId()
       local weapon = GetSelectedPedWeapon(playerPed)
       for weaponName, weaponVal in pairs(Sling.cachedWeapons) do
-        print(weaponName)
         if not Sling.cachedAttachments[weaponName] then
           Sling.cachedAttachments[weaponName] = {}
         end
@@ -100,13 +122,33 @@ function Sling:WeaponThread()
               GiveWeaponComponentToWeaponObject(weaponObject, component)
             end
 
-            AttachEntityToEntity(weaponObject, playerPed, GetPedBoneIndex(playerPed, 24816), coords.coords.x,
+            AttachEntityToEntity(weaponObject, playerPed, GetPedBoneIndex(playerPed, (coords.boneId or 24816)),
+              coords.coords.x,
               coords.coords.y, coords.coords.z, coords.rot.x, coords.rot.y, coords.rot.z,
               true, true, false, true, 2, true)
             Sling.cachedAttachments[weaponName].obj = weaponObject
           end
 
-          if not Sling.cachedPositions[weaponName] and not DoesEntityExist(Sling.cachedAttachments[weaponName].obj) then
+          if not Sling.cachedPositions[weaponName] and Sling.cachedPresets[weaponName] and not DoesEntityExist(Sling.cachedAttachments[weaponName].obj) then
+            local coords = Sling.cachedPresets[weaponName]
+            -- local weaponObject = CreateObject(weaponVal.model, 0.0, 0.0, 0.0,
+            --   true,
+            --   true, true)
+            local weaponObject = CreateWeaponObject(weaponVal.name, 0, coords.coords.x, coords.coords.y, coords.coords
+              .z,
+              true,
+              1.0, 0)
+            for _, component in pairs(weaponVal.attachments) do
+              GiveWeaponComponentToWeaponObject(weaponObject, component)
+            end
+            AttachEntityToEntity(weaponObject, playerPed, GetPedBoneIndex(playerPed, (coords.boneId or 24816)),
+              coords.coords.x,
+              coords.coords.y, coords.coords.z, coords.rot.x, coords.rot.y, coords.rot.z,
+              true, true, false, true, 2, true)
+            Sling.cachedAttachments[weaponName].obj = weaponObject
+          end
+
+          if not Sling.cachedPositions[weaponName] and not Sling.cachedPresets[weaponName] and not DoesEntityExist(Sling.cachedAttachments[weaponName].obj) then
             -- local weaponObject = CreateObject(weaponVal.model, 0.0, 0.0, 0.0,
             --   true,
             --   true, true)
@@ -129,7 +171,7 @@ function Sling:WeaponThread()
   end)
 end
 
-function Sling:OnPositioningDone(object, coords)
+function Sling:OnPositioningDone(coords)
   lib.hideTextUI()
   Sling.inPositioning = false;
   local weapon = Sling.data.weapon
@@ -139,7 +181,7 @@ function Sling:OnPositioningDone(object, coords)
     coords.position = coords.position + vector3(0.0, 0.17, 0.0)
   end
   TriggerServerEvent("force-sling:server:saveWeaponPosition", coords.position, coords.rotation, weapon,
-    Sling.data.weaponName)
+    Sling.data.weaponName, Sling.data.boneId, Sling.isPreset)
   Sling.cachedPositions[Sling.data.weaponName] = {
     coords = coords.position,
     rot = coords.rotation
@@ -190,7 +232,7 @@ function Sling:StartPositioning()
         end
 
         Sling.object = CreateObject(Sling.data.weapon, 0, 0, 0, false, true, false)
-        AttachEntityToEntity(Sling.object, playerPed, GetPedBoneIndex(playerPed, 24816), coords.position.x,
+        AttachEntityToEntity(Sling.object, playerPed, GetPedBoneIndex(playerPed, Sling.data.boneId), coords.position.x,
           coords.position.y, coords.position.z, coords.rotation.x, coords.rotation.y, coords.rotation.z,
           true, true, false, true, 2, true)
         SetEntityCollision(Sling.object, false, false)
@@ -198,7 +240,7 @@ function Sling:StartPositioning()
 
       -- Enter
       if IsDisabledControlJustReleased(0, 176) then
-        Sling:OnPositioningDone(Sling.object, coords)
+        Sling:OnPositioningDone(coords)
         break
       end
 
@@ -218,7 +260,7 @@ function Sling:StartPositioning()
         local x = math.clamp(coords.position.x - speed, -0.2, 0.3)
         coords.position = vector3(x, coords.position.y, coords.position.z)
         -- coords.position.x = math.clamp(coords.position.x - speed, -0.2, 0.2)
-        AttachEntityToEntity(Sling.object, playerPed, GetPedBoneIndex(playerPed, 24816), coords.position.x,
+        AttachEntityToEntity(Sling.object, playerPed, GetPedBoneIndex(playerPed, Sling.data.boneId), coords.position.x,
           coords.position.y, coords.position.z, coords.rotation.x, coords.rotation.y, coords.rotation.z,
           true, true, false, true, 2, true)
       end
@@ -228,7 +270,7 @@ function Sling:StartPositioning()
         -- coords.position = coords.position + vector3(speed, 0.0, 0.0)
         local x = math.clamp(coords.position.x + speed, -0.2, 0.3)
         coords.position = vector3(x, coords.position.y, coords.position.z)
-        AttachEntityToEntity(Sling.object, playerPed, GetPedBoneIndex(playerPed, 24816), coords.position.x,
+        AttachEntityToEntity(Sling.object, playerPed, GetPedBoneIndex(playerPed, Sling.data.boneId), coords.position.x,
           coords.position.y, coords.position.z, coords.rotation.x, coords.rotation.y, coords.rotation.z,
           true, true, false, true, 2, true)
       end
@@ -238,7 +280,7 @@ function Sling:StartPositioning()
         -- coords.position = coords.position + vector3(0.0, speed, 0.0)
         local y = math.clamp(coords.position.y + speed, -0.2, 0.2)
         coords.position = vector3(coords.position.x, y, coords.position.z)
-        AttachEntityToEntity(Sling.object, playerPed, GetPedBoneIndex(playerPed, 24816), coords.position.x,
+        AttachEntityToEntity(Sling.object, playerPed, GetPedBoneIndex(playerPed, Sling.data.boneId), coords.position.x,
           coords.position.y, coords.position.z, coords.rotation.x, coords.rotation.y, coords.rotation.z,
           true, true, false, true, 2, true)
       end
@@ -248,7 +290,7 @@ function Sling:StartPositioning()
         -- coords.position = coords.position + vector3(0.0, -speed, 0.0)
         local y = math.clamp(coords.position.y - speed, -0.2, 0.2)
         coords.position = vector3(coords.position.x, y, coords.position.z)
-        AttachEntityToEntity(Sling.object, playerPed, GetPedBoneIndex(playerPed, 24816), coords.position.x,
+        AttachEntityToEntity(Sling.object, playerPed, GetPedBoneIndex(playerPed, Sling.data.boneId), coords.position.x,
           coords.position.y, coords.position.z, coords.rotation.x, coords.rotation.y, coords.rotation.z,
           true, true, false, true, 2, true)
       end
@@ -258,7 +300,7 @@ function Sling:StartPositioning()
         -- coords.position = coords.position + vector3(0.0, 0.0, speed)
         local z = math.clamp(coords.position.z + speed, -0.2, 0.2)
         coords.position = vector3(coords.position.x, coords.position.y, z)
-        AttachEntityToEntity(Sling.object, playerPed, GetPedBoneIndex(playerPed, 24816), coords.position.x,
+        AttachEntityToEntity(Sling.object, playerPed, GetPedBoneIndex(playerPed, Sling.data.boneId), coords.position.x,
           coords.position.y, coords.position.z, coords.rotation.x, coords.rotation.y, coords.rotation.z,
           true, true, false, true, 2, true)
       end
@@ -268,7 +310,7 @@ function Sling:StartPositioning()
         -- coords.position = coords.position - vector3(0.0, 0.0, speed)
         local z = math.clamp(coords.position.z - speed, -0.2, 0.2)
         coords.position = vector3(coords.position.x, coords.position.y, z)
-        AttachEntityToEntity(Sling.object, playerPed, GetPedBoneIndex(playerPed, 24816), coords.position.x,
+        AttachEntityToEntity(Sling.object, playerPed, GetPedBoneIndex(playerPed, Sling.data.boneId), coords.position.x,
           coords.position.y, coords.position.z, coords.rotation.x, coords.rotation.y, coords.rotation.z,
           true, true, false, true, 2, true)
       end
@@ -276,7 +318,7 @@ function Sling:StartPositioning()
       -- scroll up / Rotate forward
       if IsDisabledControlPressed(0, 96) then
         coords.rotation = coords.rotation + vector3((speed + 1.0), 0.0, 0.0)
-        AttachEntityToEntity(Sling.object, playerPed, GetPedBoneIndex(playerPed, 24816), coords.position.x,
+        AttachEntityToEntity(Sling.object, playerPed, GetPedBoneIndex(playerPed, Sling.data.boneId), coords.position.x,
           coords.position.y, coords.position.z, coords.rotation.x, coords.rotation.y, coords.rotation.z,
           true, true, false, true, 2, true)
       end
@@ -284,7 +326,7 @@ function Sling:StartPositioning()
       -- scroll down / Rotate backward
       if IsDisabledControlPressed(0, 97) then
         coords.rotation = coords.rotation + vector3(-(speed + 1.0), 0.0, 0.0)
-        AttachEntityToEntity(Sling.object, playerPed, GetPedBoneIndex(playerPed, 24816), coords.position.x,
+        AttachEntityToEntity(Sling.object, playerPed, GetPedBoneIndex(playerPed, Sling.data.boneId), coords.position.x,
           coords.position.y, coords.position.z, coords.rotation.x, coords.rotation.y, coords.rotation.z,
           true, true, false, true, 2, true)
       end
@@ -292,7 +334,7 @@ function Sling:StartPositioning()
       --  Z / Rotate +side
       if IsDisabledControlPressed(0, 48) then
         coords.rotation = coords.rotation + vector3(0.0, 0.0, (speed + 1.0))
-        AttachEntityToEntity(Sling.object, playerPed, GetPedBoneIndex(playerPed, 24816), coords.position.x,
+        AttachEntityToEntity(Sling.object, playerPed, GetPedBoneIndex(playerPed, Sling.data.boneId), coords.position.x,
           coords.position.y, coords.position.z, coords.rotation.x, coords.rotation.y, coords.rotation.z,
           true, true, false, true, 2, true)
       end
@@ -300,7 +342,7 @@ function Sling:StartPositioning()
       -- X / Rotate -side
       if IsDisabledControlPressed(0, 73) then
         coords.rotation = coords.rotation - vector3(0.0, 0.0, (speed + 1.0))
-        AttachEntityToEntity(Sling.object, playerPed, GetPedBoneIndex(playerPed, 24816), coords.position.x,
+        AttachEntityToEntity(Sling.object, playerPed, GetPedBoneIndex(playerPed, Sling.data.boneId), coords.position.x,
           coords.position.y, coords.position.z, coords.rotation.x, coords.rotation.y, coords.rotation.z,
           true, true, false, true, 2, true)
       end
@@ -308,7 +350,7 @@ function Sling:StartPositioning()
       -- G / Rotate y-side
       if IsDisabledControlPressed(0, 47) then
         coords.rotation = coords.rotation + vector3(0.0, (speed + 1.0), 0.0)
-        AttachEntityToEntity(Sling.object, playerPed, GetPedBoneIndex(playerPed, 24816), coords.position.x,
+        AttachEntityToEntity(Sling.object, playerPed, GetPedBoneIndex(playerPed, Sling.data.boneId), coords.position.x,
           coords.position.y, coords.position.z, coords.rotation.x, coords.rotation.y, coords.rotation.z,
           true, true, false, true, 2, true)
       end
@@ -316,7 +358,7 @@ function Sling:StartPositioning()
       -- H / Rotate y-side
       if IsDisabledControlPressed(0, 74) then
         coords.rotation = coords.rotation - vector3(0.0, (speed + 1.0), 0.0)
-        AttachEntityToEntity(Sling.object, playerPed, GetPedBoneIndex(playerPed, 24816), coords.position.x,
+        AttachEntityToEntity(Sling.object, playerPed, GetPedBoneIndex(playerPed, Sling.data.boneId), coords.position.x,
           coords.position.y, coords.position.z, coords.rotation.x, coords.rotation.y, coords.rotation.z,
           true, true, false, true, 2, true)
       end
@@ -346,7 +388,8 @@ function Sling:StartPositioning()
   end)
 end
 
-function Sling:StartConfiguration()
+function Sling:StartConfiguration(isPreset)
+  Sling.isPreset = isPreset
   lib.showMenu('sling_select')
 end
 
@@ -357,7 +400,12 @@ function Sling:InitCommands()
   if Config.Debug or admin.isAdmin then
     RegisterCommand(Config.Command.name, function(source, args, raw)
       if Config.Command.permission ~= "any" and not admin.adminType == Config.Command.permission then return end;
-      Sling:StartConfiguration()
+      Sling:StartConfiguration(false)
+    end, false)
+
+    RegisterCommand(Config.Presets.command, function(source, args, raw)
+      if Config.Presets.permission ~= "any" and not admin.adminType == Config.Presets.permission then return end;
+      Sling:StartConfiguration(true)
     end, false)
   end
 
