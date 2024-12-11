@@ -17,6 +17,17 @@ The resource allows players to manage weapon sling positions in the game, dynami
 - **Bone Configuration**: Configure player bones where the weapon can be attached.
 - **Editable Weapons**: Manage configurations for editable weapons.
 
+### Preview
+
+![Controls while placing](https://gyazo.com/b2210eeaf30198c1e55c5d5add9c3236/raw)
+_Controls while placing_
+
+![Config menu ingame](https://gyazo.com/21121fb8b2f86d9f8752baf3d91e239c/raw)
+_Config menu ingame_
+
+![Placement](https://gyazo.com/8f8babbad18d25745ebcc799cad05b2c/raw)
+_Placement_
+
 ---
 
 ## Prerequisites
