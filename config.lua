@@ -26,7 +26,7 @@ Config.Framework = {
 
 -- Inventory configuration
 Config.Inventory =
-"auto"                             -- none (Original weapon wheel), auto, qs-inventory, qb_inventory, core_inventory, ox_inventory or custom
+"auto"                             -- none (Original weapon wheel), auto, qs-inventory, qb-inventory, core_inventory, ox_inventory or custom
 Config.UseWeaponAttachments = true -- May not work with all inventory systems and lower performance
 
 -- Command configuration

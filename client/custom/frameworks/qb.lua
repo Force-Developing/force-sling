@@ -17,12 +17,18 @@ AddEventHandler('QBCore:Client:OnPlayerLoaded', function()
   CreateThread(function()
     while true do
       local xPlayer = QBCore.Functions.GetPlayerData()
-      -- for k, v in pairs(Config.Weapons) do
-      --   if item == k then
-      --     Sling.cachedWeapons[item] = v
-      --     Sling.cachedWeapons[item].attachments = Inventory:GetWeaponAttachment(item)
-      --   end
-      -- end
+      if not xPlayer or not xPlayer.items then
+        Wait(1000);
+      end
+      for _, v in pairs(xPlayer.items) do
+        for key, val in pairs(Config.Weapons) do
+          if v.name == key then
+            Sling.cachedWeapons[key] = val
+            Sling.cachedWeapons[key].attachments = Inventory:GetWeaponAttachment(key)
+            break
+          end
+        end
+      end
       Wait(1500);
     end
   end)

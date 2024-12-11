@@ -106,7 +106,6 @@ function Sling:WeaponThread()
         if not Sling.cachedAttachments[weaponName] then
           Sling.cachedAttachments[weaponName] = {}
         end
-
         if weapon == weaponVal.name then
           if DoesEntityExist(Sling.cachedAttachments[weaponName].obj) then
             DeleteEntity(Sling.cachedAttachments[weaponName].obj)

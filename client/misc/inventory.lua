@@ -11,6 +11,8 @@ function Inventory:GetWeapons()
     userInventory = exports['qs-inventory']:getUserInventory()
   elseif Config.Inventory == "core_inventory" then
     userInventory = exports.core_inventory:getInventory()
+  elseif Config.Inventory == "qb-inventory" then
+    userInventory = QBCore.Functions.GetPlayerData().items
   elseif Config.Inventory == "custom" then
     return CustomInventory:GetWeapons()
   else
@@ -45,6 +47,8 @@ function Inventory:GetWeaponAttachment(item)
     userInventory = exports['qs-inventory']:getUserInventory()
   elseif Config.Inventory == "core_inventory" then
     userInventory = exports.core_inventory:getInventory()
+  elseif Config.Inventory == "qb-inventory" then
+    userInventory = QBCore.Functions.GetPlayerData().items
   elseif Config.Inventory == "custom" then
     return CustomInventory:GetWeaponAttachment(item)
   else

@@ -19,14 +19,13 @@ shared_scripts {
 
 -- Server scripts
 server_scripts {
-    'version.lua',            -- Version control script
+    'version.lua',          -- Version control script
 
-    "server/events.lua",      -- Server-side event handlers
-    "server/functions.lua",   -- Server-side functions
-    "server/misc/loader.lua", -- Miscellaneous loader script
-    "server/main.lua",        -- Main server script
-    "server/custom/*.lua",    -- Other custom server scripts
-    "server/misc/*.lua"       -- Miscellaneous server scripts
+    "server/events.lua",    -- Server-side event handlers
+    "server/functions.lua", -- Server-side functions
+    "server/main.lua",      -- Main server script
+    "server/custom/*.lua",  -- Other custom server scripts
+    "server/misc/*.lua"     -- Miscellaneous server scripts
 }
 
 -- Client scripts
@@ -36,7 +35,6 @@ client_scripts {
     "client/functions.lua",           -- Client-side functions
     "client/misc/loader.lua",         -- Miscellaneous loader script
     "client/main.lua",                -- Main client script
-    "client/callbacks.lua",           -- Client-side callback handlers
     "client/custom/frameworks/*.lua", -- Custom framework scripts
     "client/custom/*.lua",            -- Other custom client scripts
     "client/misc/*.lua",              -- Miscellaneous client scripts
