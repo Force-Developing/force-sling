@@ -8,11 +8,6 @@ Sling = {
 
   inPositioning = false,
   data = {
-    weapon = nil,
-    weaponName = nil,
-    weaponHash = nil,
-    boneId = nil,
-
     object = nil,
   }
 }
@@ -48,6 +43,15 @@ function Sling:InitSling()
     return weapons
   end
 
+  local bones = loadBoneOptions()
+  local weapons = loadWeaponOptions()
+
+  local selectData = {
+    boneId = 24816,
+    weapon = `w_pi_pistol50`,
+    weaponName = "weapon_pistol50"
+  }
+
   lib.registerMenu({
     id = 'sling_select',
     title = locale("slingConfig"),
@@ -56,16 +60,15 @@ function Sling:InitSling()
       if selected == 1 then
         for key, val in pairs(Config.Bones) do
           if key == args[scrollIndex] then
-            Sling.data.boneId = val
+            selectData.boneId = val
             break
           end
         end
       elseif selected == 2 then
         for key, val in pairs(Config.Weapons) do
           if key == args[scrollIndex] then
-            Sling.data.weapon = val.model
-            Sling.data.weaponName = key
-            Sling.data.weaponHash = val.name
+            selectData.weapon = val.model
+            selectData.weaponName = key
             break
           end
         end
@@ -77,19 +80,14 @@ function Sling:InitSling()
       Sling.inPositioning = false
     end,
     options = {
-      { label = 'Bone',    values = loadBoneOptions(),   args = loadBoneOptions() },
-      { label = 'Weapon',  values = loadWeaponOptions(), args = loadWeaponOptions() },
+      { label = 'Bone',    values = bones,   args = bones },
+      { label = 'Weapon',  values = weapons, args = weapons },
       { label = 'Continue' },
     }
   }, function(selected, scrollIndex, args)
-    if not Sling.data.weapon or not Sling.data.weaponName or not Sling.data.boneId then
-      Sling.data.weapon = `w_pi_pistol50`
-      Sling.data.weaponName = "weapon_pistol50"
-      Sling.data.boneId = 24816
-    end
-    Sling:Debug("info", "Selected weapon: " .. Sling.data.weapon)
-    Sling:Debug("info", "Selected bone: " .. Sling.data.boneId)
-    Sling:StartPositioning()
+    Sling:Debug("info", "Selected weapon: " .. selectData.weapon)
+    Sling:Debug("info", "Selected bone: " .. selectData.boneId)
+    Sling:StartPositioning(selectData)
   end)
 end
 
@@ -133,10 +131,10 @@ function Sling:WeaponThread()
   end)
 end
 
-function Sling:OnPositioningDone(coords)
+function Sling:OnPositioningDone(coords, selectData)
   lib.hideTextUI()
   Sling.inPositioning = false
-  local weapon = Sling.data.weapon
+  local weapon = selectData.weapon
   coords.position = vector3(coords.position.x, coords.position.y, coords.position.z)
   local distanceFromMiddle = #(coords.position - vector3(0.0, 0.0, 0.0))
   local distanceFromMiddle2 = #(coords.position - vector3(0.0, 0.0, -0.2))
@@ -145,15 +143,15 @@ function Sling:OnPositioningDone(coords)
     coords.position = vector3(coords.position.x, 0.17, coords.position.z)
   end
   TriggerServerEvent("force-sling:server:saveWeaponPosition", coords.position, coords.rotation, weapon,
-    Sling.data.weaponName, Sling.data.boneId, Sling.isPreset)
-  Sling.cachedPositions[Sling.data.weaponName] = {
+    selectData.weaponName, selectData.boneId, Sling.isPreset)
+  Sling.cachedPositions[selectData.weaponName] = {
     coords = coords.position,
     rot = coords.rotation,
-    boneId = Sling.data.boneId
+    boneId = selectData.boneId
   }
-  if Sling.cachedAttachments[Sling.data.weaponName] then
-    if DoesEntityExist(Sling.cachedAttachments[Sling.data.weaponName].obj) then
-      DeleteEntity(Sling.cachedAttachments[Sling.data.weaponName].obj)
+  if Sling.cachedAttachments[selectData.weaponName] then
+    if DoesEntityExist(Sling.cachedAttachments[selectData.weaponName].obj) then
+      DeleteEntity(Sling.cachedAttachments[selectData.weaponName].obj)
     end
   end
   DeleteEntity(Sling.object)
@@ -166,7 +164,8 @@ local function DisableControls()
   end
 end
 
-function Sling:StartPositioning()
+--- @param selectData table
+function Sling:StartPositioning(selectData)
   if Sling.inPositioning then return end
   local function vector3(x, y, z)
     return { x = x, y = y, z = z }
@@ -182,23 +181,23 @@ function Sling:StartPositioning()
     while Sling.inPositioning do
       local playerPed = PlayerPedId()
       if not DoesEntityExist(Sling.object) then
-        if not HasModelLoaded(Sling.data.weapon) then
-          RequestModel(Sling.data.weapon)
-          while not HasModelLoaded(Sling.data.weapon) do
+        if not HasModelLoaded(selectData.weapon) then
+          RequestModel(selectData.weapon)
+          while not HasModelLoaded(selectData.weapon) do
             Wait(100)
           end
         end
 
-        Sling.object = CreateObject(Sling.data.weapon, 0, 0, 0, false, true, false)
-        AttachEntityToEntity(Sling.object, playerPed, GetPedBoneIndex(playerPed, Sling.data.boneId), coords.position.x,
+        Sling.object = CreateObject(selectData.weapon, 0, 0, 0, false, true, false)
+        AttachEntityToEntity(Sling.object, playerPed, GetPedBoneIndex(playerPed, selectData.boneId), coords.position.x,
           coords.position.y, coords.position.z, coords.rotation.x, coords.rotation.y, coords.rotation.z, true, true,
           false, true, 2, true)
         SetEntityCollision(Sling.object, false, false)
       end
 
-      -- Handle control inputs for positioning
-      if IsDisabledControlJustReleased(0, 176) then
-        Sling:OnPositioningDone(coords)
+      -- ENTER Handle control inputs for positioning
+      if IsDisabledControlJustPressed(0, 18) then
+        Sling:OnPositioningDone(coords, selectData)
         break
       end
 
@@ -214,7 +213,7 @@ function Sling:StartPositioning()
         coords.position = vector3(coords.position.x, coords.position.y, coords.position.z)
         coords.position[axis] = lib.math.clamp(coords.position[axis] + delta, -0.2, 0.2)
 
-        AttachEntityToEntity(Sling.object, playerPed, GetPedBoneIndex(playerPed, Sling.data.boneId), coords.position.x,
+        AttachEntityToEntity(Sling.object, playerPed, GetPedBoneIndex(playerPed, selectData.boneId), coords.position.x,
           coords.position.y, coords.position.z, coords.rotation.x, coords.rotation.y, coords.rotation.z, true, true,
           false, true, 2, true)
       end
@@ -222,11 +221,12 @@ function Sling:StartPositioning()
       local function updateRotation(axis, delta)
         coords.rotation = vector3(coords.rotation.x, coords.rotation.y, coords.rotation.z)
         coords.rotation[axis] = coords.rotation[axis] + delta
-        AttachEntityToEntity(Sling.object, playerPed, GetPedBoneIndex(playerPed, Sling.data.boneId), coords.position.x,
+        AttachEntityToEntity(Sling.object, playerPed, GetPedBoneIndex(playerPed, selectData.boneId), coords.position.x,
           coords.position.y, coords.position.z, coords.rotation.x, coords.rotation.y, coords.rotation.z, true, true,
           false, true, 2, true)
       end
 
+      -- TODO: fix so all bones have the same controls
       if IsDisabledControlPressed(0, 44) then updatePosition('x', -speed) end
       if IsDisabledControlPressed(0, 46) then updatePosition('x', speed) end
       if IsDisabledControlPressed(0, 188) then updatePosition('y', speed) end
@@ -253,6 +253,9 @@ function Sling:StartPositioning()
         locale("move") ..
         ', XY  \n' ..
         '[Scroll]- ' ..
+        locale("rotate") ..
+        '  \n' ..
+        '[XZ]- ' ..
         locale("rotate") ..
         '  \n' ..
         '[GH]    - ' ..
