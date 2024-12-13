@@ -109,6 +109,10 @@ function Sling:WeaponThread()
     while true do
       local playerPed = PlayerPedId()
       local weapon = GetSelectedPedWeapon(playerPed)
+      while Sling.inPositioning do
+        Wait(1000)
+      end
+
       for weaponName, weaponVal in pairs(Sling.cachedWeapons) do
         if not Sling.cachedAttachments[weaponName] then
           Sling.cachedAttachments[weaponName] = {}
@@ -160,7 +164,7 @@ function Sling:OnPositioningDone(coords, selectData)
 end
 
 local function DisableControls()
-  local controls = { 25, 44, 45, 51, 140, 141, 143, 263, 264, 24, 96, 97, 47, 74 }
+  local controls = { 25, 44, 45, 51, 140, 141, 143, 263, 264, 24, 96, 97, 47, 74, 177 }
   for _, control in ipairs(controls) do
     DisableControlAction(0, control, true)
   end
@@ -169,6 +173,18 @@ end
 --- @param selectData table
 function Sling:StartPositioning(selectData)
   if Sling.inPositioning then return end
+  local coords = {
+    position = vector3(0.0, 0.0, 0.0),
+    rotation = vector3(0.0, 0.0, 0.0)
+  }
+  if Sling.cachedAttachments[selectData.weaponName] and DoesEntityExist(Sling.cachedAttachments[selectData.weaponName].obj) then
+    DeleteEntity(Sling.cachedAttachments[selectData.weaponName].obj)
+  end
+  if Sling.cachedPositions[selectData.weaponName] then
+    coords.position = Sling.cachedPositions[selectData.weaponName].coords
+    coords.rotation = Sling.cachedPositions[selectData.weaponName].rot
+  end
+
   local function vector3(x, y, z)
     return { x = x, y = y, z = z }
   end
@@ -176,10 +192,6 @@ function Sling:StartPositioning(selectData)
   Sling.inPositioning = true
   CreateThread(function()
     local speed = 0.001
-    local coords = {
-      position = vector3(0.0, 0.0, 0.0),
-      rotation = vector3(0.0, 0.0, 0.0)
-    }
     while Sling.inPositioning do
       local playerPed = PlayerPedId()
       if not DoesEntityExist(Sling.object) then
@@ -200,6 +212,14 @@ function Sling:StartPositioning(selectData)
       -- ENTER Handle control inputs for positioning
       if IsDisabledControlJustPressed(0, 18) then
         Sling:OnPositioningDone(coords, selectData)
+        break
+      end
+
+      -- Backspace cancel
+      if IsDisabledControlJustPressed(0, 177) then
+        DeleteEntity(Sling.object)
+        Sling.inPositioning = false
+        lib.hideTextUI()
         break
       end
 
@@ -262,7 +282,9 @@ function Sling:StartPositioning(selectData)
         '  \n' ..
         '[GH]    - ' ..
         locale("rotate") ..
-        ' Z  \n' .. '[Shift] - ' .. locale("speed") .. '  \n' .. '[ENTER] - ' .. locale("confirm") .. '  \n')
+        ' Z  \n' ..
+        '[Shift] - ' ..
+        locale("speed") .. '  \n' .. '[ENTER] - ' .. locale("confirm") .. '  \n' .. '[BACKSPACE] - ' .. locale("cancel"))
 
       DisableControls()
 
@@ -283,6 +305,20 @@ function Sling:InitCommands()
     RegisterCommand(Config.Command.name, function(source, args, raw)
       if Config.Command.permission ~= "any" and not admin.adminType == Config.Command.permission then return end
       Sling:StartConfiguration(false)
+    end, false)
+
+    RegisterCommand(Config.Command.reset, function(source, args, raw)
+      if Config.Command.permission ~= "any" and not admin.adminType == Config.Command.permission then return end
+      local weapon = args[1] and args[1]:lower() or GetSelectedPedWeapon(PlayerPedId())
+      if type(weapon) == "number" then
+        for weaponName, weaponVal in pairs(Sling.cachedWeapons) do
+          if weaponVal.name == weapon then
+            weapon = weaponName
+            break
+          end
+        end
+      end
+      Sling.cachedPositions = lib.callback.await("force-sling:callback:resetWeaponPositions", false, weapon)
     end, false)
 
     RegisterCommand(Config.Presets.command, function(source, args, raw)

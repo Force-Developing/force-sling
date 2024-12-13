@@ -7,5 +7,6 @@
   "move": "Verplaatsen",
   "rotate": "Draaien",
   "speed": "Snelheid",
-  "confirm": "Bevestigen"
+  "confirm": "Bevestigen",
+  "cancel": "Annuleren"
 }

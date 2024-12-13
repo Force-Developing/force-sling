@@ -45,6 +45,7 @@ Config.UseWeaponAttachments = true
 -- @field [string] Command.permission - Permission level required to use the command ("any" or specific permission)
 Config.Command = {
   name = "sling",
+  reset = "resetsling",
   description = "Configure weapon positions",
   permission = "any"
 }
@@ -55,7 +56,7 @@ Config.Command = {
 -- @field [string] Presets.permission - Permission level required to use the preset command ("global" or specific permission)
 Config.Presets = {
   command = "slingpreset",
-  permission = "global"
+  permission = "global",
 }
 
 -- Bone configuration settings

@@ -7,5 +7,6 @@
   "move": "Flytta",
   "rotate": "Rotera",
   "speed": "Hastighet",
-  "confirm": "Bekräfta"
+  "confirm": "Bekräfta",
+  "cancel": "Avbryt"
 }

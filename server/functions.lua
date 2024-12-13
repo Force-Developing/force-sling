@@ -31,6 +31,17 @@ function Sling:LoadServerCallbacks()
     return json.decode(LoadResourceFile(GetCurrentResourceName(), "json/presets.json")) or {}
   end)
 
+  lib.callback.register("force-sling:callback:resetWeaponPositions", function(source, weapon)
+    Sling:Debug("info",
+      "Resetting weapon positions for source = " .. tostring(source) .. " and weapon = " .. tostring(weapon))
+    local identifier = GetPlayerIdentifierByType(source, "license")
+    local positions = json.decode(LoadResourceFile(GetCurrentResourceName(), "json/positions.json")) or {}
+    positions[identifier] = positions[identifier] or {}
+    positions[identifier][weapon] = nil
+    SaveResourceFile(GetCurrentResourceName(), "json/positions.json", json.encode(positions), -1)
+    return positions[identifier]
+  end)
+
   Sling:Debug("info", "Server callbacks loaded")
 end
 

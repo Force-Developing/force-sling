@@ -7,5 +7,6 @@
   "move": "Déplacer",
   "rotate": "Pivoter",
   "speed": "Vitesse",
-  "confirm": "Confirmer"
+  "confirm": "Confirmer",
+  "cancel": "Annuler"
 }
