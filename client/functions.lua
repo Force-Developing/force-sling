@@ -180,9 +180,12 @@ function Sling:StartPositioning(selectData)
   if Sling.cachedAttachments[selectData.weaponName] and DoesEntityExist(Sling.cachedAttachments[selectData.weaponName].obj) then
     DeleteEntity(Sling.cachedAttachments[selectData.weaponName].obj)
   end
-  if Sling.cachedPositions[selectData.weaponName] then
+  if Sling.cachedPositions[selectData.weaponName] and selectData.boneId == Sling.cachedPositions[selectData.weaponName].boneId then
     coords.position = Sling.cachedPositions[selectData.weaponName].coords
     coords.rotation = Sling.cachedPositions[selectData.weaponName].rot
+  elseif Sling.cachedPresets[selectData.weaponName] and selectData.boneId == Sling.cachedPresets[selectData.weaponName].boneId then
+    coords.position = Sling.cachedPresets[selectData.weaponName].coords
+    coords.rotation = Sling.cachedPresets[selectData.weaponName].rot
   end
 
   local function vector3(x, y, z)
