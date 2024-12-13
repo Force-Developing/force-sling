@@ -13,6 +13,7 @@ AddEventHandler("onResourceStop", function(resource)
   for _, attachment in pairs(Sling.cachedAttachments) do
     if DoesEntityExist(attachment.obj) then
       Sling:Debug("info", "Deleting cached attachment object")
+      NetworkUnregisterNetworkedEntity(attachment.obj)
       DeleteEntity(attachment.obj)
     end
   end

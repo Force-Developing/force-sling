@@ -101,6 +101,7 @@ function Sling:WeaponThread()
     AttachEntityToEntity(weaponObject, playerPed, GetPedBoneIndex(playerPed, (coords.boneId or 24816)),
       coords.coords.x, coords.coords.y, coords.coords.z, coords.rot.x, coords.rot.y, coords.rot.z, true, true, false,
       true, 2, true)
+    NetworkRegisterEntityAsNetworked(weaponObject)
     Sling.cachedAttachments[weaponName].obj = weaponObject
   end
 
@@ -115,6 +116,7 @@ function Sling:WeaponThread()
 
         if weapon == weaponVal.name then
           if DoesEntityExist(Sling.cachedAttachments[weaponName].obj) then
+            NetworkUnregisterNetworkedEntity(Sling.cachedAttachments[weaponName].obj)
             DeleteEntity(Sling.cachedAttachments[weaponName].obj)
           end
         else
