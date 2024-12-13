@@ -4,7 +4,7 @@ game "gta5"
 
 author 'Force Developments <discord:@force3883>'
 description 'Fivem Sling system for ESX, QBCore and custom frameworks'
-version '1.0.0'
+version '1.0.10'
 
 dependencies {
     'ox_lib',
