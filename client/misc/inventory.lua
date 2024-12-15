@@ -13,6 +13,8 @@ function Inventory:GetWeapons()
     userInventory = exports.core_inventory:getInventory()
   elseif Config.Inventory == "qb-inventory" then
     userInventory = QBCore.Functions.GetPlayerData().items
+  elseif Config.Inventory == "ox_inventory" then
+    userInventory = exports.ox_inventory:GetPlayerItems()
   elseif Config.Inventory == "custom" then
     return CustomInventory:GetWeapons()
   else
@@ -23,7 +25,7 @@ function Inventory:GetWeapons()
   -- Iterate through the user's inventory and match weapons with the configured weapons
   for _, v in pairs(userInventory) do
     for key, val in pairs(Config.Weapons) do
-      if v.name == key then
+      if v.name:lower() == key:lower() then
         weapons[key] = val
         weapons[key].attachments = Inventory:GetWeaponAttachment(key)
         Sling:Debug("info", "Weapon found: " .. key)
@@ -49,6 +51,8 @@ function Inventory:GetWeaponAttachment(item)
     userInventory = exports.core_inventory:getInventory()
   elseif Config.Inventory == "qb-inventory" then
     userInventory = QBCore.Functions.GetPlayerData().items
+  elseif Config.Inventory == "ox_inventory" then
+    userInventory = exports.ox_inventory:GetPlayerItems()
   elseif Config.Inventory == "custom" then
     return CustomInventory:GetWeaponAttachment(item)
   else
@@ -58,7 +62,7 @@ function Inventory:GetWeaponAttachment(item)
 
   -- Iterate through the user's inventory and match attachments with the specified weapon
   for _, v in pairs(userInventory) do
-    if v.name == item and v.info and v.info.attachments then
+    if v.name:lower() == item:lower() and v.info and v.info.attachments then
       for _, attachment in pairs(v.info.attachments) do
         table.insert(components, attachment.component)
         Sling:Debug("info", "Attachment found for weapon: " .. item .. " component: " .. attachment.component)
