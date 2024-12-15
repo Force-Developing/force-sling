@@ -92,15 +92,37 @@ function Sling:InitSling()
 end
 
 function Sling:WeaponThread()
+  -- Old version where networking were kind of bad
+  -- local function createAndAttachWeapon(weaponName, weaponVal, coords, playerPed)
+  --   local weaponObject = CreateWeaponObject(weaponVal.name, 0, coords.coords.x, coords.coords.y, coords.coords.z, true,
+  --     1.0, 0)
+  --   for _, component in pairs(weaponVal.attachments) do
+  --     GiveWeaponComponentToWeaponObject(weaponObject, component)
+  --   end
+  --   AttachEntityToEntity(weaponObject, playerPed, GetPedBoneIndex(playerPed, (coords.boneId or 24816)),
+  --     coords.coords.x, coords.coords.y, coords.coords.z, coords.rot.x, coords.rot.y, coords.rot.z, true, true, false,
+  --     true, 2, true)
+  --   NetworkRegisterEntityAsNetworked(weaponObject)
+  --   Sling.cachedAttachments[weaponName].obj = weaponObject
+  -- end
+  -- Extremely weird fix for the networking issue when createweaponobject is lagging on player attachment
   local function createAndAttachWeapon(weaponName, weaponVal, coords, playerPed)
     local weaponObject = CreateWeaponObject(weaponVal.name, 0, coords.coords.x, coords.coords.y, coords.coords.z, true,
       1.0, 0)
     for _, component in pairs(weaponVal.attachments) do
       GiveWeaponComponentToWeaponObject(weaponObject, component)
     end
-    AttachEntityToEntity(weaponObject, playerPed, GetPedBoneIndex(playerPed, (coords.boneId or 24816)),
+    local test = CreateObjectNoOffset(weaponVal.model, coords.coords.x, coords.coords.y, coords.coords.z, true, true,
+      false)
+    SetEntityVisible(test, false, false)
+    AttachEntityToEntity(test, playerPed, GetPedBoneIndex(playerPed, (coords.boneId or 24816)),
       coords.coords.x, coords.coords.y, coords.coords.z, coords.rot.x, coords.rot.y, coords.rot.z, true, true, false,
       true, 2, true)
+    AttachEntityToEntity(weaponObject, test, GetEntityBoneIndexByName(test, "gun_root"), 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+      true, true, false, true, 2, true)
+    -- AttachEntityToEntity(weaponObject, playerPed, GetPedBoneIndex(playerPed, (coords.boneId or 24816)),
+    --   coords.coords.x, coords.coords.y, coords.coords.z, coords.rot.x, coords.rot.y, coords.rot.z, true, true, false,
+    --   true, 2, true)
     NetworkRegisterEntityAsNetworked(weaponObject)
     Sling.cachedAttachments[weaponName].obj = weaponObject
   end
