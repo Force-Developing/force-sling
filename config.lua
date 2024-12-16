@@ -5,7 +5,7 @@ Config = {}
 Config.Debug = true
 
 -- Set the locale for the application
--- @field [string] Locale - Language code for the locale ("ar", "en", "es", "fr", "pt", "de", "nl", "pl", "ru", "sv" or "auto")
+-- @field [string] Locale - Language code for the locale ("ar", "en", "es", "fr", "pt", "de", "nl", "pl", "ru", "se" or "auto")
 Config.Locale = "en"
 
 -- Admin configuration settings
@@ -35,13 +35,15 @@ Config.Framework = {
 -- Inventory configuration settings
 -- @field [string] Inventory - Inventory system to use ("none", "auto", "qs-inventory", "qb-inventory", "core_inventory", "ox_inventory" or "custom")
 -- @field [boolean] UseWeaponAttachments - Enable or disable weapon attachments (may not work with all inventory systems and may lower performance)
+-- @field [number] MaxWeaponsAttached - Maximum number of weapons that can be attached to the player; the higher the number, the more performance impact
 Config.Inventory = "auto"
 Config.UseWeaponAttachments = true
-Config.MaxWeaponsAttached = 4 -- Maximum number of weapons that can be attached to the player the higher the number the more performance impact
+Config.MaxWeaponsAttached = 4
 
 -- Command configuration settings
 -- @field [table] Command - Configuration for the sling command
 -- @field [string] Command.name - Name of the command
+-- @field [string] Command.reset - Command to reset the sling configuration
 -- @field [string] Command.description - Description of the command
 -- @field [string] Command.permission - Permission level required to use the command ("any" or specific permission)
 Config.Command = {

@@ -82,7 +82,7 @@ The resource includes a [config.lua](https://github.com/Force-Developing/force-s
   - Enable or disable debug logging.
 - **Locale**:
   - Set the language for the system.
-  - Supported languages: `ar`, `en`, `es`, `fr`, `pt`, `de`, `nl`, `pl`, `ru`, `sv`, or `auto`.
+  - Supported languages: `ar`, `en`, `es`, `fr`, `pt`, `de`, `nl`, `pl`, `ru`, `se`, or `auto`.
 - **Admin Tools**:
   - Add admin player identifiers under the `Config.Admin.Global.players` array.
 - **Framework Support**:
@@ -99,8 +99,18 @@ Refer to the Configuration section for detailed information on each setting.
 The resource provides several commands to manage weapon positions:
 
 - **`/sling`**
+
   - **Description**: Configure weapon positions.
   - **Permission**: Any player can use this command.
+
+- **`/resetsling`**
+
+  - **Description**: Reset personal sling position to global.
+  - **Permission**: Any player can use this command.
+
+- **`/slingpreset`**
+  - **Description**: Configure global weapon positions.
+  - **Permission**: Only admins are allowed to use this by default.
 
 Refer to the Commands section for a list of available commands and their usage.
 
