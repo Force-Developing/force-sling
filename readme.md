@@ -1,4 +1,4 @@
-# FiveM Sling System
+# FiveM Sling System / Weapons on back
 
 The resource allows players to manage weapon sling positions in the game, dynamically reflecting the weapons they have in their inventory. This enhances immersion and adds a realistic touch to your FiveM server. [Documentation](https://force-developing.gitbook.io/docs/free-resources/force-sling)
 
