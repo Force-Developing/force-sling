@@ -29,6 +29,11 @@ AddEventHandler("esx:removeInventoryItem", function(item)
       if Sling.cachedAttachments[item] then
         if DoesEntityExist(Sling.cachedAttachments[item].obj) then
           DeleteEntity(Sling.cachedAttachments[item].obj)
+          NetworkUnregisterNetworkedEntity(Sling.cachedAttachments[item].obj)
+          DeleteObject(Sling.cachedAttachments[item].obj)
+          DetachEntity(Sling.cachedAttachments[item].placeholder, true, false)
+          DeleteObject(Sling.cachedAttachments[item].placeholder)
+          Sling.currentAttachedAmount = Sling.currentAttachedAmount - 1
         end
       end
       break;

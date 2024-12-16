@@ -5,6 +5,7 @@ Sling = {
   cachedPresets = {},
   cachedWeapons = {},
   cachedAttachments = {},
+  currentAttachedAmount = 0,
 
   inPositioning = false,
   data = {
@@ -92,39 +93,39 @@ function Sling:InitSling()
 end
 
 function Sling:WeaponThread()
-  -- Old version where networking were kind of bad
-  -- local function createAndAttachWeapon(weaponName, weaponVal, coords, playerPed)
-  --   local weaponObject = CreateWeaponObject(weaponVal.name, 0, coords.coords.x, coords.coords.y, coords.coords.z, true,
-  --     1.0, 0)
-  --   for _, component in pairs(weaponVal.attachments) do
-  --     GiveWeaponComponentToWeaponObject(weaponObject, component)
-  --   end
-  --   AttachEntityToEntity(weaponObject, playerPed, GetPedBoneIndex(playerPed, (coords.boneId or 24816)),
-  --     coords.coords.x, coords.coords.y, coords.coords.z, coords.rot.x, coords.rot.y, coords.rot.z, true, true, false,
-  --     true, 2, true)
-  --   NetworkRegisterEntityAsNetworked(weaponObject)
-  --   Sling.cachedAttachments[weaponName].obj = weaponObject
-  -- end
   -- Extremely weird fix for the networking issue when createweaponobject is lagging on player attachment
   local function createAndAttachWeapon(weaponName, weaponVal, coords, playerPed)
+    if Sling.currentAttachedAmount >= Config.MaxWeaponsAttached then return end
     local weaponObject = CreateWeaponObject(weaponVal.name, 0, coords.coords.x, coords.coords.y, coords.coords.z, true,
       1.0, 0)
     for _, component in pairs(weaponVal.attachments) do
       GiveWeaponComponentToWeaponObject(weaponObject, component)
     end
-    local test = CreateObjectNoOffset(weaponVal.model, coords.coords.x, coords.coords.y, coords.coords.z, true, true,
+    lib.requestModel(weaponVal.model)
+    local placeholder = CreateObjectNoOffset(weaponVal.model, coords.coords.x, coords.coords.y, coords.coords.z, false,
+      true,
       false)
-    SetEntityVisible(test, false, false)
-    AttachEntityToEntity(test, playerPed, GetPedBoneIndex(playerPed, (coords.boneId or 24816)),
+    SetEntityVisible(placeholder, false, false)
+    AttachEntityToEntity(placeholder, playerPed, GetPedBoneIndex(playerPed, (coords.boneId or 24816)),
       coords.coords.x, coords.coords.y, coords.coords.z, coords.rot.x, coords.rot.y, coords.rot.z, true, true, false,
       true, 2, true)
-    AttachEntityToEntity(weaponObject, test, GetEntityBoneIndexByName(test, "gun_root"), 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+    AttachEntityToEntity(weaponObject, placeholder, GetEntityBoneIndexByName(placeholder, "gun_root"), 0.0, 0.0, 0.0,
+      0.0,
+      0.0,
+      0.0,
       true, true, false, true, 2, true)
-    -- AttachEntityToEntity(weaponObject, playerPed, GetPedBoneIndex(playerPed, (coords.boneId or 24816)),
-    --   coords.coords.x, coords.coords.y, coords.coords.z, coords.rot.x, coords.rot.y, coords.rot.z, true, true, false,
-    --   true, 2, true)
     NetworkRegisterEntityAsNetworked(weaponObject)
     Sling.cachedAttachments[weaponName].obj = weaponObject
+    Sling.cachedAttachments[weaponName].placeholder = placeholder
+    Sling.currentAttachedAmount = Sling.currentAttachedAmount + 1
+  end
+
+  local function deleteWeapon(weaponName)
+    NetworkUnregisterNetworkedEntity(Sling.cachedAttachments[weaponName].obj)
+    DeleteObject(Sling.cachedAttachments[weaponName].obj)
+    DetachEntity(Sling.cachedAttachments[weaponName].placeholder, true, false)
+    DeleteObject(Sling.cachedAttachments[weaponName].placeholder)
+    Sling.currentAttachedAmount = Sling.currentAttachedAmount - 1
   end
 
   CreateThread(function()
@@ -142,14 +143,17 @@ function Sling:WeaponThread()
 
         if weapon == weaponVal.name then
           if DoesEntityExist(Sling.cachedAttachments[weaponName].obj) then
-            NetworkUnregisterNetworkedEntity(Sling.cachedAttachments[weaponName].obj)
-            DeleteEntity(Sling.cachedAttachments[weaponName].obj)
+            deleteWeapon(weaponName)
           end
         else
           if not DoesEntityExist(Sling.cachedAttachments[weaponName].obj) then
             local coords = Sling.cachedPositions[weaponName] or Sling.cachedPresets[weaponName] or
                 { coords = { x = 0.0, y = -0.15, z = 0.0 }, rot = { x = 0.0, y = 0.0, z = 0.0 }, boneId = 24816 }
             createAndAttachWeapon(weaponName, weaponVal, coords, playerPed)
+          else
+            if not IsEntityAttachedToAnyPed(Sling.cachedAttachments[weaponName].placeholder) then
+              deleteWeapon(weaponName)
+            end
           end
         end
       end

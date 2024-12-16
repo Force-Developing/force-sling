@@ -37,6 +37,7 @@ Config.Framework = {
 -- @field [boolean] UseWeaponAttachments - Enable or disable weapon attachments (may not work with all inventory systems and may lower performance)
 Config.Inventory = "auto"
 Config.UseWeaponAttachments = true
+Config.MaxWeaponsAttached = 4 -- Maximum number of weapons that can be attached to the player the higher the number the more performance impact
 
 -- Command configuration settings
 -- @field [table] Command - Configuration for the sling command
