@@ -114,7 +114,7 @@ function Sling:WeaponThread()
       0.0,
       0.0,
       true, true, false, true, 2, true)
-    NetworkRegisterEntityAsNetworked(weaponObject)
+    -- NetworkRegisterEntityAsNetworked(weaponObject)
     Sling.cachedAttachments[weaponName].obj = weaponObject
     Sling.cachedAttachments[weaponName].placeholder = placeholder
     Sling.currentAttachedAmount = Sling.currentAttachedAmount + 1
