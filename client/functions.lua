@@ -102,7 +102,7 @@ function Sling:WeaponThread()
       GiveWeaponComponentToWeaponObject(weaponObject, component)
     end
     lib.requestModel(weaponVal.model)
-    local placeholder = CreateObjectNoOffset(weaponVal.model, coords.coords.x, coords.coords.y, coords.coords.z, false,
+    local placeholder = CreateObjectNoOffset(weaponVal.model, coords.coords.x, coords.coords.y, coords.coords.z, true,
       true,
       false)
     SetEntityVisible(placeholder, false, false)
