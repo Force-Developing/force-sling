@@ -105,7 +105,7 @@ function Sling:WeaponThread()
     local placeholder = CreateObjectNoOffset(weaponVal.model, coords.coords.x, coords.coords.y, coords.coords.z, true,
       true,
       false)
-    SetEntityVisible(placeholder, false, false)
+    SetEntityAlpha(placeholder, 0, false)
     AttachEntityToEntity(placeholder, playerPed, GetPedBoneIndex(playerPed, (coords.boneId or 24816)),
       coords.coords.x, coords.coords.y, coords.coords.z, coords.rot.x, coords.rot.y, coords.rot.z, true, true, false,
       true, 2, true)
@@ -114,7 +114,6 @@ function Sling:WeaponThread()
       0.0,
       0.0,
       true, true, false, true, 2, true)
-    -- NetworkRegisterEntityAsNetworked(weaponObject)
     Sling.cachedAttachments[weaponName].obj = weaponObject
     Sling.cachedAttachments[weaponName].placeholder = placeholder
     Sling.currentAttachedAmount = Sling.currentAttachedAmount + 1
