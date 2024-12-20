@@ -41,6 +41,7 @@ end
 --- @param item string The weapon name.
 --- @return table A table containing the weapon's attachments.
 function Inventory:GetWeaponAttachment(item)
+  if not Config.UseWeaponAttachments then return {} end
   local components = {}
   local userInventory
 
