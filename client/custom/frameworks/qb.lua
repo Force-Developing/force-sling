@@ -20,6 +20,7 @@ CreateThread(function()
     local cachedItems = {}
     for _, v in pairs(xPlayer.items) do
       for key, val in pairs(Config.Weapons) do
+        key = key:lower()
         if v.name == key then
           cachedItems[key] = true
           Sling.cachedWeapons[key] = val
@@ -29,6 +30,7 @@ CreateThread(function()
       end
     end
     for key, val in pairs(Config.Weapons) do
+      key = key:lower()
       if not cachedItems[key] then
         if Sling.cachedAttachments[key] then
           if DoesEntityExist(Sling.cachedAttachments[key].obj) then

@@ -12,6 +12,7 @@ end
 
 RegisterNetEvent("esx:addInventoryItem")
 AddEventHandler("esx:addInventoryItem", function(item)
+  item = item:lower()
   for k, v in pairs(Config.Weapons) do
     if item == k then
       Sling.cachedWeapons[item] = v
@@ -23,11 +24,11 @@ end)
 
 RegisterNetEvent("esx:removeInventoryItem")
 AddEventHandler("esx:removeInventoryItem", function(item)
+  item = item:lower()
   for k, v in pairs(Config.Weapons) do
     if item == k then
-      Sling.cachedWeapons[item] = nil
       if Sling.cachedAttachments[item] then
-        if DoesEntityExist(Sling.cachedAttachments[item].obj) then
+        if DoesEntityExist(Sling.cachedAttachments[item].obj) or DoesEntityExist(Sling.cachedAttachments[item].placeholder) then
           DeleteEntity(Sling.cachedAttachments[item].obj)
           NetworkUnregisterNetworkedEntity(Sling.cachedAttachments[item].obj)
           DeleteObject(Sling.cachedAttachments[item].obj)
@@ -36,6 +37,7 @@ AddEventHandler("esx:removeInventoryItem", function(item)
           Sling.currentAttachedAmount = Sling.currentAttachedAmount - 1
         end
       end
+      Sling.cachedWeapons[item] = nil
       break;
     end
   end
