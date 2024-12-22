@@ -26,6 +26,7 @@ server_scripts {
 }
 
 client_scripts {
+    -- "@qbx_core/modules/playerdata.lua", -- QBX (enable if using QBX)
     "client/utils.lua",
     "client/events.lua",
     "client/functions.lua",

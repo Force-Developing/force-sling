@@ -13,6 +13,10 @@ function Sling:InitFramework()
       Config.Framework.name = "qbcore"
       Config.Framework.resource = "qb-core"
       Sling:Debug("info", "Framework set to qbcore with resource qb-core")
+    elseif GetResourceState("qbx_core") ~= "missing" then
+      Config.Framework.name = "qbx"
+      Config.Framework.resource = "qbx_core"
+      Sling:Debug("info", "Framework set to qbx with resource qbx_core")
     else
       Config.Framework.name = "custom"
       Sling:Debug("info", "Framework set to custom")

@@ -25,7 +25,7 @@ Config.Admin = {
 
 -- Framework configuration settings
 -- @field [table] Framework - Configuration for the framework
--- @field [string] Framework.name - Name of the framework ("esx", "qbcore", "custom" or "auto")
+-- @field [string] Framework.name - Name of the framework ("esx", "qbcore", "qbx", "custom" or "auto")
 -- @field [string] Framework.resource - Resource name for ESX or QBCore
 Config.Framework = {
   name = "auto",
