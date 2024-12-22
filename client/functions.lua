@@ -98,6 +98,8 @@ function Sling:WeaponThread()
     if Sling.currentAttachedAmount >= Config.MaxWeaponsAttached then return end
     local weaponObject = CreateWeaponObject(weaponVal.name, 0, coords.coords.x, coords.coords.y, coords.coords.z, true,
       1.0, 0)
+    NetworkUnregisterNetworkedEntity(weaponObject) -- Saftey measure to prevent the weapon from being networked
+    SetEntityCollision(weaponObject, false, false)
     for _, component in pairs(weaponVal.attachments) do
       GiveWeaponComponentToWeaponObject(weaponObject, component)
     end
@@ -105,6 +107,7 @@ function Sling:WeaponThread()
     local placeholder = CreateObjectNoOffset(weaponVal.model, coords.coords.x, coords.coords.y, coords.coords.z, true,
       true,
       false)
+    SetEntityCollision(placeholder, false, false)
     SetEntityAlpha(placeholder, 0, false)
     AttachEntityToEntity(placeholder, playerPed, GetPedBoneIndex(playerPed, (coords.boneId or 24816)),
       coords.coords.x, coords.coords.y, coords.coords.z, coords.rot.x, coords.rot.y, coords.rot.z, true, true, false,
@@ -181,8 +184,9 @@ function Sling:OnPositioningDone(coords, selectData)
     boneId = selectData.boneId
   }
   if Sling.cachedAttachments[selectData.weaponName] then
-    if DoesEntityExist(Sling.cachedAttachments[selectData.weaponName].obj) then
+    if DoesEntityExist(Sling.cachedAttachments[selectData.weaponName].obj) or DoesEntityExist(Sling.cachedAttachments[selectData.weaponName].placeholder) then
       DeleteEntity(Sling.cachedAttachments[selectData.weaponName].obj)
+      DeleteEntity(Sling.cachedAttachments[selectData.weaponName].placeholder)
     end
   end
   DeleteEntity(Sling.object)
