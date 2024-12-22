@@ -26,6 +26,7 @@ RegisterNetEvent("esx:removeInventoryItem")
 AddEventHandler("esx:removeInventoryItem", function(item)
   item = item:lower()
   for k, v in pairs(Config.Weapons) do
+    k = k:lower()
     if item == k then
       if Sling.cachedAttachments[item] then
         if DoesEntityExist(Sling.cachedAttachments[item].obj) or DoesEntityExist(Sling.cachedAttachments[item].placeholder) then

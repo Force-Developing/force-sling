@@ -5,18 +5,14 @@ function Sling:InitFramework()
       Config.Framework.name = "esx"
       Config.Framework.resource = "es_extended"
       Sling:Debug("info", "Framework set to esx with resource es_extended")
-    elseif GetResourceState("bablo_base") ~= "missing" then
-      Config.Framework.name = "esx"
-      Config.Framework.resource = "bablo_base"
-      Sling:Debug("info", "Framework set to esx with resource bablo_base")
-    elseif GetResourceState("qb-core") ~= "missing" then
-      Config.Framework.name = "qbcore"
-      Config.Framework.resource = "qb-core"
-      Sling:Debug("info", "Framework set to qbcore with resource qb-core")
     elseif GetResourceState("qbx_core") ~= "missing" then
       Config.Framework.name = "qbx"
       Config.Framework.resource = "qbx_core"
       Sling:Debug("info", "Framework set to qbx with resource qbx_core")
+    elseif GetResourceState("qb-core") ~= "missing" then
+      Config.Framework.name = "qbcore"
+      Config.Framework.resource = "qb-core"
+      Sling:Debug("info", "Framework set to qbcore with resource qb-core")
     else
       Config.Framework.name = "custom"
       Sling:Debug("info", "Framework set to custom")

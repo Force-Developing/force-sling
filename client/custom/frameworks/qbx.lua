@@ -11,7 +11,7 @@ CreateThread(function()
   end
   isPlayerLoaded = true;
   while true do
-    local xPlayer = QBX.PlayerData
+    local xPlayer = exports.qbx_core:GetPlayerData()
     if not xPlayer or not xPlayer.items then
       Wait(1000);
     end
@@ -19,6 +19,7 @@ CreateThread(function()
     for _, v in pairs(xPlayer.items) do
       for key, val in pairs(Config.Weapons) do
         key = key:lower()
+        v.name = v.name:lower()
         if v.name == key then
           cachedItems[key] = true
           Sling.cachedWeapons[key] = val

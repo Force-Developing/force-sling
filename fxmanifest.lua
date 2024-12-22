@@ -4,7 +4,7 @@ game "gta5"
 
 author 'Force Developments <discord:@force3883>'
 description 'Fivem Sling system for ESX, QBCore and custom frameworks'
-version '1.1.11'
+version '1.2.10'
 
 dependencies {
     'ox_lib',
@@ -26,7 +26,6 @@ server_scripts {
 }
 
 client_scripts {
-    -- "@qbx_core/modules/playerdata.lua", -- QBX (enable if using QBX)
     "client/utils.lua",
     "client/events.lua",
     "client/functions.lua",

@@ -21,6 +21,7 @@ CreateThread(function()
     for _, v in pairs(xPlayer.items) do
       for key, val in pairs(Config.Weapons) do
         key = key:lower()
+        v.name = v.name:lower()
         if v.name == key then
           cachedItems[key] = true
           Sling.cachedWeapons[key] = val
