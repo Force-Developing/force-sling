@@ -1,3 +1,8 @@
+local POSITION_CLAMP = 0.2
+local DEFAULT_SPEED = 0.001
+local FAST_SPEED = 0.01
+local DEFAULT_BONE = 24816
+
 Sling = {
   isPreset = false,
 
@@ -23,8 +28,9 @@ function Sling:InitMain()
 end
 
 function Sling:InitSling()
-  Sling.cachedPositions = lib.callback.await("force-sling:callback:getCachedPositions", false)
-  Sling.cachedPresets = lib.callback.await("force-sling:callback:getCachedPresets", false)
+  local libCallbackAwait = lib.callback.await
+  Sling.cachedPositions = libCallbackAwait("force-sling:callback:getCachedPositions", false)
+  Sling.cachedPresets = libCallbackAwait("force-sling:callback:getCachedPresets", false)
   Sling.cachedWeapons = Inventory:GetWeapons()
   Sling:WeaponThread()
 
@@ -48,7 +54,7 @@ function Sling:InitSling()
   local weapons = loadWeaponOptions()
 
   local selectData = {
-    boneId = 24816,
+    boneId = DEFAULT_BONE,
     weapon = `w_pi_pistol50`,
     weaponName = "weapon_pistol50"
   }
@@ -59,20 +65,11 @@ function Sling:InitSling()
     position = 'top-right',
     onSideScroll = function(selected, scrollIndex, args)
       if selected == 1 then
-        for key, val in pairs(Config.Bones) do
-          if key == args[scrollIndex] then
-            selectData.boneId = val
-            break
-          end
-        end
+        selectData.boneId = Config.Bones[args[scrollIndex]]
       elseif selected == 2 then
-        for key, val in pairs(Config.Weapons) do
-          if key == args[scrollIndex] then
-            selectData.weapon = val.model
-            selectData.weaponName = key
-            break
-          end
-        end
+        local weapon = Config.Weapons[args[scrollIndex]]
+        selectData.weapon = weapon.model
+        selectData.weaponName = args[scrollIndex]
       end
     end,
     onSelected = function(selected, secondary, args)
@@ -93,41 +90,59 @@ function Sling:InitSling()
 end
 
 function Sling:WeaponThread()
-  -- Extremely weird fix for the networking issue when createweaponobject is lagging on player attachment
   local function createAndAttachWeapon(weaponName, weaponVal, coords, playerPed)
     if Sling.currentAttachedAmount >= Config.MaxWeaponsAttached then return end
     local weaponObject = CreateWeaponObject(weaponVal.name, 0, coords.coords.x, coords.coords.y, coords.coords.z, true,
       1.0, 0)
-    NetworkUnregisterNetworkedEntity(weaponObject) -- Saftey measure to prevent the weapon from being networked
+    NetworkUnregisterNetworkedEntity(weaponObject)
     SetEntityCollision(weaponObject, false, false)
     for _, component in pairs(weaponVal.attachments) do
       GiveWeaponComponentToWeaponObject(weaponObject, component)
     end
     lib.requestModel(weaponVal.model)
     local placeholder = CreateObjectNoOffset(weaponVal.model, coords.coords.x, coords.coords.y, coords.coords.z, true,
-      true,
-      false)
+      true, false)
     SetEntityCollision(placeholder, false, false)
     SetEntityAlpha(placeholder, 0, false)
-    AttachEntityToEntity(placeholder, playerPed, GetPedBoneIndex(playerPed, (coords.boneId or 24816)),
+    AttachEntityToEntity(placeholder, playerPed, GetPedBoneIndex(playerPed, (coords.boneId or DEFAULT_BONE)),
       coords.coords.x, coords.coords.y, coords.coords.z, coords.rot.x, coords.rot.y, coords.rot.z, true, true, false,
       true, 2, true)
-    AttachEntityToEntity(weaponObject, placeholder, GetEntityBoneIndexByName(placeholder, "gun_root"), 0.0, 0.0, 0.0,
-      0.0,
-      0.0,
-      0.0,
-      true, true, false, true, 2, true)
+    AttachEntityToEntity(weaponObject, placeholder, GetEntityBoneIndexByName(placeholder, "gun_root"), 0.0, 0.0, 0.0, 0.0,
+      0.0, 0.0, true, true, false, true, 2, true)
     Sling.cachedAttachments[weaponName].obj = weaponObject
     Sling.cachedAttachments[weaponName].placeholder = placeholder
     Sling.currentAttachedAmount = Sling.currentAttachedAmount + 1
   end
 
   local function deleteWeapon(weaponName)
-    NetworkUnregisterNetworkedEntity(Sling.cachedAttachments[weaponName].obj)
-    DeleteObject(Sling.cachedAttachments[weaponName].obj)
-    DetachEntity(Sling.cachedAttachments[weaponName].placeholder, true, false)
-    DeleteObject(Sling.cachedAttachments[weaponName].placeholder)
+    local attachment = Sling.cachedAttachments[weaponName]
+    NetworkUnregisterNetworkedEntity(attachment.obj)
+    DeleteObject(attachment.obj)
+    DetachEntity(attachment.placeholder, true, false)
+    DeleteObject(attachment.placeholder)
     Sling.currentAttachedAmount = Sling.currentAttachedAmount - 1
+  end
+
+  local function handleWeaponAttachment(weaponName, weaponVal, playerPed, weapon)
+    if not Sling.cachedAttachments[weaponName] then
+      Sling.cachedAttachments[weaponName] = {}
+    end
+
+    if weapon == weaponVal.name then
+      if DoesEntityExist(Sling.cachedAttachments[weaponName].obj) then
+        deleteWeapon(weaponName)
+      end
+    else
+      if not DoesEntityExist(Sling.cachedAttachments[weaponName].obj) then
+        local coords = Sling.cachedPositions[weaponName] or Sling.cachedPresets[weaponName] or
+            { coords = { x = 0.0, y = -0.15, z = 0.0 }, rot = { x = 0.0, y = 0.0, z = 0.0 }, boneId = DEFAULT_BONE }
+        createAndAttachWeapon(weaponName, weaponVal, coords, playerPed)
+      else
+        if not IsEntityAttachedToAnyPed(Sling.cachedAttachments[weaponName].placeholder) then
+          deleteWeapon(weaponName)
+        end
+      end
+    end
   end
 
   CreateThread(function()
@@ -139,25 +154,7 @@ function Sling:WeaponThread()
       end
 
       for weaponName, weaponVal in pairs(Sling.cachedWeapons) do
-        if not Sling.cachedAttachments[weaponName] then
-          Sling.cachedAttachments[weaponName] = {}
-        end
-
-        if weapon == weaponVal.name then
-          if DoesEntityExist(Sling.cachedAttachments[weaponName].obj) then
-            deleteWeapon(weaponName)
-          end
-        else
-          if not DoesEntityExist(Sling.cachedAttachments[weaponName].obj) then
-            local coords = Sling.cachedPositions[weaponName] or Sling.cachedPresets[weaponName] or
-                { coords = { x = 0.0, y = -0.15, z = 0.0 }, rot = { x = 0.0, y = 0.0, z = 0.0 }, boneId = 24816 }
-            createAndAttachWeapon(weaponName, weaponVal, coords, playerPed)
-          else
-            if not IsEntityAttachedToAnyPed(Sling.cachedAttachments[weaponName].placeholder) then
-              deleteWeapon(weaponName)
-            end
-          end
-        end
+        handleWeaponAttachment(weaponName, weaponVal, playerPed, weapon)
       end
 
       Wait(1000)
@@ -199,13 +196,16 @@ local function DisableControls()
   end
 end
 
---- @param selectData table
 function Sling:StartPositioning(selectData)
   if Sling.inPositioning then return end
+  local function vector3(x, y, z)
+    return { x = x or 0, y = y or 0, z = z or 0 }
+  end
   local coords = {
     position = vector3(0.0, 0.0, 0.0),
     rotation = vector3(0.0, 0.0, 0.0)
   }
+
   if Sling.cachedAttachments[selectData.weaponName] and DoesEntityExist(Sling.cachedAttachments[selectData.weaponName].obj) then
     DeleteEntity(Sling.cachedAttachments[selectData.weaponName].obj)
   end
@@ -217,13 +217,23 @@ function Sling:StartPositioning(selectData)
     coords.rotation = Sling.cachedPresets[selectData.weaponName].rot
   end
 
-  local function vector3(x, y, z)
-    return { x = x, y = y, z = z }
-  end
-
   Sling.inPositioning = true
   CreateThread(function()
-    local speed = 0.001
+    local speed = DEFAULT_SPEED
+    local function updatePosition(axis, delta)
+      coords.position[axis] = lib.math.clamp(coords.position[axis] + delta, -POSITION_CLAMP, POSITION_CLAMP)
+      AttachEntityToEntity(Sling.object, PlayerPedId(), GetPedBoneIndex(PlayerPedId(), selectData.boneId),
+        coords.position.x, coords.position.y, coords.position.z, coords.rotation.x, coords.rotation.y, coords.rotation.z,
+        true, true, false, true, 2, true)
+    end
+
+    local function updateRotation(axis, delta)
+      coords.rotation[axis] = coords.rotation[axis] + delta
+      AttachEntityToEntity(Sling.object, PlayerPedId(), GetPedBoneIndex(PlayerPedId(), selectData.boneId),
+        coords.position.x, coords.position.y, coords.position.z, coords.rotation.x, coords.rotation.y, coords.rotation.z,
+        true, true, false, true, 2, true)
+    end
+
     while Sling.inPositioning do
       local playerPed = PlayerPedId()
       if not DoesEntityExist(Sling.object) then
@@ -256,31 +266,13 @@ function Sling:StartPositioning(selectData)
       end
 
       if IsDisabledControlPressed(0, 21) then
-        speed = 0.01
+        speed = FAST_SPEED
       end
 
       if IsDisabledControlReleased(0, 21) then
-        speed = 0.001
+        speed = DEFAULT_SPEED
       end
 
-      local function updatePosition(axis, delta)
-        coords.position = vector3(coords.position.x, coords.position.y, coords.position.z)
-        coords.position[axis] = lib.math.clamp(coords.position[axis] + delta, -0.2, 0.2)
-
-        AttachEntityToEntity(Sling.object, playerPed, GetPedBoneIndex(playerPed, selectData.boneId), coords.position.x,
-          coords.position.y, coords.position.z, coords.rotation.x, coords.rotation.y, coords.rotation.z, true, true,
-          false, true, 2, true)
-      end
-
-      local function updateRotation(axis, delta)
-        coords.rotation = vector3(coords.rotation.x, coords.rotation.y, coords.rotation.z)
-        coords.rotation[axis] = coords.rotation[axis] + delta
-        AttachEntityToEntity(Sling.object, playerPed, GetPedBoneIndex(playerPed, selectData.boneId), coords.position.x,
-          coords.position.y, coords.position.z, coords.rotation.x, coords.rotation.y, coords.rotation.z, true, true,
-          false, true, 2, true)
-      end
-
-      -- TODO: fix so all bones have the same controls
       if IsDisabledControlPressed(0, 44) then updatePosition('x', -speed) end
       if IsDisabledControlPressed(0, 46) then updatePosition('x', speed) end
       if IsDisabledControlPressed(0, 188) then updatePosition('y', speed) end
@@ -362,8 +354,6 @@ function Sling:InitCommands()
   Sling:Debug("info", "Commands initialized")
 end
 
----@param type string The type of the debug message (error, warn, info, verbose, debug).
----@param message string The debug message to print.
 function Sling:Debug(type, message)
   if not Config.Debug then return end
   lib.print[type](message)

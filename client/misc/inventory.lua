@@ -1,23 +1,21 @@
 Inventory = {}
 
+local function SafeInventoryCall(fn)
+  local success, result = pcall(fn)
+  if not success then
+    Sling:Debug("error", "Inventory error: " .. tostring(result))
+    return nil
+  end
+  return result
+end
+
 --- Retrieves the player's weapons from the inventory.
 --- @return table A table containing the player's weapons.
 function Inventory:GetWeapons()
   local weapons = {}
-  local userInventory
+  local userInventory = self:GetUserInventory()
 
-  -- Check the configured inventory system and retrieve the user's inventory
-  if Config.Inventory == "qs-inventory" then
-    userInventory = exports['qs-inventory']:getUserInventory()
-  elseif Config.Inventory == "core_inventory" then
-    userInventory = exports.core_inventory:getInventory()
-  elseif Config.Inventory == "qb-inventory" then
-    userInventory = QBCore.Functions.GetPlayerData().items
-  elseif Config.Inventory == "ox_inventory" then
-    userInventory = exports.ox_inventory:GetPlayerItems()
-  elseif Config.Inventory == "custom" then
-    return CustomInventory:GetWeapons()
-  else
+  if not userInventory then
     Sling:Debug("warn", "Unsupported inventory system: " .. tostring(Config.Inventory))
     return weapons
   end
@@ -27,7 +25,7 @@ function Inventory:GetWeapons()
     for key, val in pairs(Config.Weapons) do
       if v.name:lower() == key:lower() then
         weapons[key] = val
-        weapons[key].attachments = Inventory:GetWeaponAttachment(key)
+        weapons[key].attachments = self:GetWeaponAttachment(key)
         Sling:Debug("info", "Weapon found: " .. key)
         break
       end
@@ -43,20 +41,9 @@ end
 function Inventory:GetWeaponAttachment(item)
   if not Config.UseWeaponAttachments then return {} end
   local components = {}
-  local userInventory
+  local userInventory = self:GetUserInventory()
 
-  -- Check the configured inventory system and retrieve the user's inventory
-  if Config.Inventory == "qs-inventory" then
-    userInventory = exports['qs-inventory']:getUserInventory()
-  elseif Config.Inventory == "core_inventory" then
-    userInventory = exports.core_inventory:getInventory()
-  elseif Config.Inventory == "qb-inventory" then
-    userInventory = QBCore.Functions.GetPlayerData().items
-  elseif Config.Inventory == "ox_inventory" then
-    userInventory = exports.ox_inventory:GetPlayerItems()
-  elseif Config.Inventory == "custom" then
-    return CustomInventory:GetWeaponAttachment(item)
-  else
+  if not userInventory then
     Sling:Debug("warn", "Unsupported inventory system: " .. tostring(Config.Inventory))
     return components
   end
@@ -72,4 +59,22 @@ function Inventory:GetWeaponAttachment(item)
   end
 
   return components
+end
+
+--- Retrieves the user's inventory based on the configured inventory system.
+--- @return table|nil The user's inventory or nil if the inventory system is unsupported.
+function Inventory:GetUserInventory()
+  if Config.Inventory == "qs-inventory" then
+    return SafeInventoryCall(function() return exports['qs-inventory']:getUserInventory() end)
+  elseif Config.Inventory == "core_inventory" then
+    return SafeInventoryCall(function() return exports.core_inventory:getInventory() end)
+  elseif Config.Inventory == "qb-inventory" then
+    return QBCore.Functions.GetPlayerData().items
+  elseif Config.Inventory == "ox_inventory" then
+    return exports.ox_inventory:GetPlayerItems()
+  elseif Config.Inventory == "custom" then
+    return CustomInventory:GetWeapons()
+  else
+    return nil
+  end
 end

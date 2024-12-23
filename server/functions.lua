@@ -13,34 +13,37 @@ end
 function Sling:LoadServerCallbacks()
   Sling:Debug("info", "Loading server callbacks")
 
-  lib.callback.register("force-Sling:callback:isPlayerAdmin", function(source, target)
-    Sling:Debug("info", "Checking if player is admin for source = " .. tostring(source))
-    if not target then target = source end
-    return Admin:IsPlayerAdmin(target)
-  end)
+  local callbacks = {
+    ["force-Sling:callback:isPlayerAdmin"] = function(source, target)
+      Sling:Debug("info", "Checking if player is admin for source = " .. tostring(source))
+      if not target then target = source end
+      return Admin:IsPlayerAdmin(target)
+    end,
+    ["force-sling:callback:getCachedPositions"] = function(source)
+      local identifier = GetPlayerIdentifierByType(source, "license")
+      local positions = json.decode(LoadResourceFile(GetCurrentResourceName(), "json/positions.json")) or {}
+      Sling:Debug("info", "Returning cached positions for identifier: " .. tostring(identifier))
+      return positions[identifier] or {}
+    end,
+    ["force-sling:callback:getCachedPresets"] = function()
+      Sling:Debug("info", "Returning cached presets")
+      return json.decode(LoadResourceFile(GetCurrentResourceName(), "json/presets.json")) or {}
+    end,
+    ["force-sling:callback:resetWeaponPositions"] = function(source, weapon)
+      Sling:Debug("info",
+        "Resetting weapon positions for source = " .. tostring(source) .. " and weapon = " .. tostring(weapon))
+      local identifier = GetPlayerIdentifierByType(source, "license")
+      local positions = json.decode(LoadResourceFile(GetCurrentResourceName(), "json/positions.json")) or {}
+      positions[identifier] = positions[identifier] or {}
+      positions[identifier][weapon] = nil
+      SaveResourceFile(GetCurrentResourceName(), "json/positions.json", json.encode(positions), -1)
+      return positions[identifier]
+    end
+  }
 
-  lib.callback.register("force-sling:callback:getCachedPositions", function(source)
-    local identifier = GetPlayerIdentifierByType(source, "license")
-    local positions = json.decode(LoadResourceFile(GetCurrentResourceName(), "json/positions.json")) or {}
-    Sling:Debug("info", "Returning cached positions for identifier: " .. tostring(identifier))
-    return positions[identifier] or {}
-  end)
-
-  lib.callback.register("force-sling:callback:getCachedPresets", function()
-    Sling:Debug("info", "Returning cached presets")
-    return json.decode(LoadResourceFile(GetCurrentResourceName(), "json/presets.json")) or {}
-  end)
-
-  lib.callback.register("force-sling:callback:resetWeaponPositions", function(source, weapon)
-    Sling:Debug("info",
-      "Resetting weapon positions for source = " .. tostring(source) .. " and weapon = " .. tostring(weapon))
-    local identifier = GetPlayerIdentifierByType(source, "license")
-    local positions = json.decode(LoadResourceFile(GetCurrentResourceName(), "json/positions.json")) or {}
-    positions[identifier] = positions[identifier] or {}
-    positions[identifier][weapon] = nil
-    SaveResourceFile(GetCurrentResourceName(), "json/positions.json", json.encode(positions), -1)
-    return positions[identifier]
-  end)
+  for name, func in pairs(callbacks) do
+    lib.callback.register(name, func)
+  end
 
   Sling:Debug("info", "Server callbacks loaded")
 end
@@ -48,6 +51,6 @@ end
 ---@param type string The type of the debug message (error, warn, info, verbose, debug).
 ---@param message string The debug message to print.
 function Sling:Debug(type, message)
-  if not Config.Debug then return end;
-  lib.print[type](message);
+  if not Config.Debug then return end
+  lib.print[type](message)
 end
