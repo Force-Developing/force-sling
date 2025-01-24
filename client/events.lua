@@ -10,13 +10,10 @@ AddEventHandler("onResourceStop", function(resource)
     DeleteEntity(Sling.object)
   end
 
-  for _, attachment in pairs(Sling.cachedAttachments) do
-    if DoesEntityExist(attachment.obj) then
+  for weaponName, attachment in pairs(Sling.cachedAttachments) do
+    if DoesEntityExist(attachment.obj) or DoesEntityExist(attachment.placeholder) then
       Sling:Debug("info", "Deleting cached attachment object")
-      NetworkUnregisterNetworkedEntity(attachment.obj)
-      DeleteObject(attachment.obj)
-      DetachEntity(attachment.placeholder, true, false)
-      DeleteObject(attachment.placeholder)
+      Utils:DeleteWeapon(weaponName)
     end
   end
 
@@ -29,13 +26,10 @@ AddEventHandler('playerDropped', function()
     DeleteEntity(Sling.object)
   end
 
-  for _, attachment in pairs(Sling.cachedAttachments) do
-    if DoesEntityExist(attachment.obj) then
+  for weaponName, attachment in pairs(Sling.cachedAttachments) do
+    if DoesEntityExist(attachment.obj) or DoesEntityExist(attachment.placeholder) then
       Sling:Debug("info", "Deleting cached attachment object")
-      NetworkUnregisterNetworkedEntity(attachment.obj)
-      DeleteObject(attachment.obj)
-      DetachEntity(attachment.placeholder, true, false)
-      DeleteObject(attachment.placeholder)
+      Utils:DeleteWeapon(weaponName)
     end
   end
   Sling:Debug("info", "Player dropped")

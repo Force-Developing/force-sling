@@ -52,5 +52,6 @@ end
 ---@param message string The debug message to print.
 function Sling:Debug(type, message)
   if not Config.Debug then return end
-  lib.print[type](message)
+  local func = lib.print[type] or lib.print.info
+  func(message)
 end
