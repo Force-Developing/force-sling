@@ -157,12 +157,11 @@ function Sling:OnPositioningDone(coords, selectData)
 end
 
 local function DisableControls()
-  -- Cache controls table outside function
   local controls = {
     25, 44, 45, 51, 140, 141, 143,
     263, 264, 24, 96, 97, 47, 74, 177
   }
-  for i = 1, #controls do -- Use numeric for loop
+  for i = 1, #controls do
     DisableControlAction(0, controls[i], true)
   end
 end

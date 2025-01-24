@@ -14,7 +14,6 @@ local function parseVersion(version)
   }
 end
 
--- Compare versions
 local function isNewerVersion(current, latest)
   local currentParsed = parseVersion(current)
   local latestParsed = parseVersion(latest)
@@ -89,6 +88,6 @@ Latest Version: %s
 end
 
 CreateThread(function()
-  Wait(5000) -- Initial delay to ensure resource is fully started
+  Wait(5000)
   versionCheck()
 end)

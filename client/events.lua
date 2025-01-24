@@ -1,7 +1,9 @@
--- Better resource cleanup
 local function cleanupEntities()
   local function safeDelete(entity)
     if DoesEntityExist(entity) then
+      if IsEntityAttachedToAnyPed(entity) then
+        DetachEntity(entity, true, true)
+      end
       DeleteObject(entity)
       SetEntityAsNoLongerNeeded(entity)
       return true

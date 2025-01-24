@@ -3,7 +3,6 @@ local function SafeSavePosition(filePath, data)
     local fileData = json.decode(LoadResourceFile(GetCurrentResourceName(), filePath)) or {}
     fileData = type(fileData) == 'table' and fileData or {}
 
-    -- Merge new data
     for k, v in pairs(data) do
       fileData[k] = v
     end
