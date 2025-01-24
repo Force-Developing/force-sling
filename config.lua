@@ -146,12 +146,3 @@ Config.Weapons = {
   ["weapon_wrench"] = { model = `w_me_wrench`, name = `weapon_wrench` },
   ["weapon_candycane"] = { model = `w_me_candy_xm3`, name = `weapon_candycane` },
 }
-
--- Use more structured configuration
-Config.Controls = {
-  POSITION_CLAMP = 0.2,
-  SPEEDS = {
-    DEFAULT = 0.001,
-    FAST = 0.01
-  }
-}

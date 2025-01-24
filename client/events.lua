@@ -1,29 +1,29 @@
 -- Better resource cleanup
 local function cleanupEntities()
-    local function safeDelete(entity)
-        if DoesEntityExist(entity) then
-            DeleteEntity(entity)
-            SetEntityAsNoLongerNeeded(entity)
-            return true
-        end
-        return false
+  local function safeDelete(entity)
+    if DoesEntityExist(entity) then
+      DeleteObject(entity)
+      SetEntityAsNoLongerNeeded(entity)
+      return true
     end
+    return false
+  end
 
-    if Sling.object then
-        safeDelete(Sling.object)
-        Sling.object = nil
+  if Sling.object then
+    safeDelete(Sling.object)
+    Sling.object = nil
+  end
+
+  for weaponName, attachment in pairs(Sling.cachedAttachments) do
+    if attachment then
+      safeDelete(attachment.obj)
+      safeDelete(attachment.placeholder)
+      Sling.cachedAttachments[weaponName] = nil
     end
+  end
 
-    for weaponName, attachment in pairs(Sling.cachedAttachments) do
-        if attachment then
-            safeDelete(attachment.obj)
-            safeDelete(attachment.placeholder)
-            Sling.cachedAttachments[weaponName] = nil
-        end
-    end
-
-    Sling.currentAttachedAmount = 0
-    collectgarbage("collect")
+  Sling.currentAttachedAmount = 0
+  collectgarbage("collect")
 end
 
 AddEventHandler("onResourceStop", function(resource)

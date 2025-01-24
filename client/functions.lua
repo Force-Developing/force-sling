@@ -3,24 +3,6 @@ local DEFAULT_SPEED = 0.001
 local FAST_SPEED = 0.01
 DEFAULT_BONE = 24816
 
-local CONTROLS = {
-  POSITION = {
-    X = { neg = 44, pos = 46 },
-    Y = { neg = 187, pos = 188 },
-    Z = { neg = 190, pos = 189 }
-  },
-  ROTATION = {
-    X = { neg = 97, pos = 96 },
-    Y = { neg = 74, pos = 47 },
-    Z = { neg = 73, pos = 48 }
-  },
-  MISC = {
-    SHIFT = 21,
-    ENTER = 18,
-    CANCEL = 177
-  }
-}
-
 Sling = {
   isPreset = false,
 
@@ -37,12 +19,12 @@ Sling = {
 }
 
 function Sling:InitMain()
-  Debug("info", "Initializing main thread")
+  Sling:Debug("info", "Initializing main thread")
 
   Sling:InitSling()
   Sling:InitCommands()
 
-  Debug("info", "Main thread initialized")
+  Sling:Debug("info", "Main thread initialized")
 end
 
 function Sling:InitSling()
@@ -101,8 +83,8 @@ function Sling:InitSling()
       { label = 'Continue' },
     }
   }, function(selected, scrollIndex, args)
-    Debug("info", "Selected weapon: " .. selectData.weapon)
-    Debug("info", "Selected bone: " .. selectData.boneId)
+    Sling:Debug("info", "Selected weapon: " .. selectData.weapon)
+    Sling:Debug("info", "Selected bone: " .. selectData.boneId)
     Sling:StartPositioning(selectData)
   end)
 end
@@ -185,19 +167,6 @@ local function DisableControls()
   end
 end
 
-function Sling:HandlePositioning(coords, speed, axis, delta)
-  coords.position[axis] = lib.math.clamp(coords.position[axis] + delta, -POSITION_CLAMP, POSITION_CLAMP)
-  self:UpdateEntityAttachment(coords)
-end
-
-function Sling:UpdateEntityAttachment(coords)
-  AttachEntityToEntity(self.object, cache.ped,
-    GetPedBoneIndex(cache.ped, self.currentBoneId),
-    coords.position.x, coords.position.y, coords.position.z,
-    coords.rotation.x, coords.rotation.y, coords.rotation.z,
-    true, true, false, true, 2, true)
-end
-
 function Sling:StartPositioning(selectData)
   if Sling.inPositioning then return end
   local coords = {
@@ -220,12 +189,17 @@ function Sling:StartPositioning(selectData)
   CreateThread(function()
     local speed = DEFAULT_SPEED
     local function updatePosition(axis, delta)
-      Sling:HandlePositioning(coords, speed, axis, delta)
+      coords.position[axis] = lib.math.clamp(coords.position[axis] + delta, -POSITION_CLAMP, POSITION_CLAMP)
+      AttachEntityToEntity(Sling.object, cache.ped, GetPedBoneIndex(cache.ped, selectData.boneId),
+        coords.position.x, coords.position.y, coords.position.z, coords.rotation.x, coords.rotation.y, coords.rotation.z,
+        true, true, false, true, 2, true)
     end
 
     local function updateRotation(axis, delta)
       coords.rotation[axis] = coords.rotation[axis] + delta
-      Sling:UpdateEntityAttachment(coords)
+      AttachEntityToEntity(Sling.object, cache.ped, GetPedBoneIndex(cache.ped, selectData.boneId),
+        coords.position.x, coords.position.y, coords.position.z, coords.rotation.x, coords.rotation.y, coords.rotation.z,
+        true, true, false, true, 2, true)
     end
 
     while Sling.inPositioning do
@@ -242,13 +216,13 @@ function Sling:StartPositioning(selectData)
       end
 
       -- ENTER Handle control inputs for positioning
-      if IsDisabledControlJustPressed(0, CONTROLS.MISC.ENTER) then
+      if IsDisabledControlJustPressed(0, 18) then
         Sling:OnPositioningDone(coords, selectData)
         break
       end
 
       -- Backspace cancel
-      if IsDisabledControlJustPressed(0, CONTROLS.MISC.CANCEL) then
+      if IsDisabledControlJustPressed(0, 177) then
         DeleteEntity(Sling.object)
         Sling.inPositioning = false
         lib.hideTextUI()
@@ -256,26 +230,26 @@ function Sling:StartPositioning(selectData)
         break
       end
 
-      if IsDisabledControlPressed(0, CONTROLS.MISC.SHIFT) then
+      if IsDisabledControlPressed(0, 21) then
         speed = FAST_SPEED
       end
 
-      if IsDisabledControlReleased(0, CONTROLS.MISC.SHIFT) then
+      if IsDisabledControlReleased(0, 21) then
         speed = DEFAULT_SPEED
       end
 
-      if IsDisabledControlPressed(0, CONTROLS.POSITION.X.neg) then updatePosition('x', -speed) end
-      if IsDisabledControlPressed(0, CONTROLS.POSITION.X.pos) then updatePosition('x', speed) end
-      if IsDisabledControlPressed(0, CONTROLS.POSITION.Y.pos) then updatePosition('y', speed) end
-      if IsDisabledControlPressed(0, CONTROLS.POSITION.Y.neg) then updatePosition('y', -speed) end
-      if IsDisabledControlPressed(0, CONTROLS.POSITION.Z.pos) then updatePosition('z', speed) end
-      if IsDisabledControlPressed(0, CONTROLS.POSITION.Z.neg) then updatePosition('z', -speed) end
-      if IsDisabledControlPressed(0, CONTROLS.ROTATION.X.pos) then updateRotation('x', speed + 1.0) end
-      if IsDisabledControlPressed(0, CONTROLS.ROTATION.X.neg) then updateRotation('x', -(speed + 1.0)) end
-      if IsDisabledControlPressed(0, CONTROLS.ROTATION.Z.pos) then updateRotation('z', speed + 1.0) end
-      if IsDisabledControlPressed(0, CONTROLS.ROTATION.Z.neg) then updateRotation('z', -(speed + 1.0)) end
-      if IsDisabledControlPressed(0, CONTROLS.ROTATION.Y.pos) then updateRotation('y', speed + 1.0) end
-      if IsDisabledControlPressed(0, CONTROLS.ROTATION.Y.neg) then updateRotation('y', -(speed + 1.0)) end
+      if IsDisabledControlPressed(0, 44) then updatePosition('x', -speed) end
+      if IsDisabledControlPressed(0, 46) then updatePosition('x', speed) end
+      if IsDisabledControlPressed(0, 188) then updatePosition('y', speed) end
+      if IsDisabledControlPressed(0, 187) then updatePosition('y', -speed) end
+      if IsDisabledControlPressed(0, 189) then updatePosition('z', speed) end
+      if IsDisabledControlPressed(0, 190) then updatePosition('z', -speed) end
+      if IsDisabledControlPressed(0, 96) then updateRotation('x', speed + 1.0) end
+      if IsDisabledControlPressed(0, 97) then updateRotation('x', -(speed + 1.0)) end
+      if IsDisabledControlPressed(0, 48) then updateRotation('z', speed + 1.0) end
+      if IsDisabledControlPressed(0, 73) then updateRotation('z', -(speed + 1.0)) end
+      if IsDisabledControlPressed(0, 47) then updateRotation('y', speed + 1.0) end
+      if IsDisabledControlPressed(0, 74) then updateRotation('y', -(speed + 1.0)) end
 
       local text = ("pos: (%.2f, %.2f, %.2f) | rot: (%.2f, %.2f, %.2f)"):format(coords.position.x, coords.position.y,
         coords.position.z, coords.rotation.x, coords.rotation.y, coords.rotation.z)
@@ -314,9 +288,9 @@ function Sling:StartConfiguration(isPreset)
 end
 
 function Sling:InitCommands()
-  Debug("info", "Initializing commands")
+  Sling:Debug("info", "Initializing commands")
   local admin = lib.callback.await("force-sling:callback:isPlayerAdmin", false)
-  if Config.Debug or admin then
+  if Config.Debug or admin.isAdmin then
     RegisterCommand(Config.Command.name, function(source, args, raw)
       if Config.Command.permission ~= "any" and admin ~= Config.Command.permission then return end
       Sling:StartConfiguration(false)
@@ -342,5 +316,11 @@ function Sling:InitCommands()
     end, false)
   end
 
-  Debug("info", "Commands initialized")
+  Sling:Debug("info", "Commands initialized")
+end
+
+function Sling:Debug(type, message)
+  if not Config.Debug then return end
+  local func = lib.print[type] or lib.print.info
+  func(message)
 end

@@ -11,7 +11,8 @@ function Utils:CreateAndAttachWeapon(weaponName, weaponVal, coords, playerPed)
     return false
   end
 
-  local weaponObject = CreateWeaponObject(weaponVal.name, 0, coords.coords.x, coords.coords.y, coords.coords.z, true, 1.0, 0)
+  local weaponObject = CreateWeaponObject(weaponVal.name, 0, coords.coords.x, coords.coords.y, coords.coords.z, true, 1.0,
+    0)
   if not weaponObject then
     Sling:Debug("error", "Failed to create weapon object")
     return false
