@@ -6,3 +6,4 @@
 /src/node_modules
 .vscode/*
 .vscode/settings.json
+.github/*
