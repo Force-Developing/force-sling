@@ -153,6 +153,7 @@ function Sling:OnPositioningDone(coords, selectData)
     end
   end
   DeleteEntity(Sling.object)
+  SetModelAsNoLongerNeeded(selectData.weapon)
 end
 
 local function DisableControls()
@@ -168,9 +169,6 @@ end
 
 function Sling:StartPositioning(selectData)
   if Sling.inPositioning then return end
-  local function vector3(x, y, z)
-    return { x = x or 0, y = y or 0, z = z or 0 }
-  end
   local coords = {
     position = vec3(0.0, 0.0, 0.0),
     rotation = vec3(0.0, 0.0, 0.0)
@@ -207,10 +205,7 @@ function Sling:StartPositioning(selectData)
     while Sling.inPositioning do
       if not DoesEntityExist(Sling.object) then
         if not HasModelLoaded(selectData.weapon) then
-          RequestModel(selectData.weapon)
-          while not HasModelLoaded(selectData.weapon) do
-            Wait(100)
-          end
+          lib.requestModel(selectData.weapon)
         end
 
         Sling.object = CreateObject(selectData.weapon, 0, 0, 0, false, true, false)
@@ -231,6 +226,7 @@ function Sling:StartPositioning(selectData)
         DeleteEntity(Sling.object)
         Sling.inPositioning = false
         lib.hideTextUI()
+        SetModelAsNoLongerNeeded(selectData.weapon)
         break
       end
 
