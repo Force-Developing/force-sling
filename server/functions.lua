@@ -1,12 +1,10 @@
 Sling = {}
 
 function Sling:InitMain()
-  lib.print.info("Initializing main")
   Debug("info", "Initializing main")
 
   Sling:LoadServerCallbacks()
 
-  lib.print.info("Main initialized")
   Debug("info", "Main initialized")
 end
 

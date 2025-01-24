@@ -19,12 +19,12 @@ Sling = {
 }
 
 function Sling:InitMain()
-  Sling:Debug("info", "Initializing main thread")
+  Debug("info", "Initializing main thread")
 
   Sling:InitSling()
   Sling:InitCommands()
 
-  Sling:Debug("info", "Main thread initialized")
+  Debug("info", "Main thread initialized")
 end
 
 function Sling:InitSling()
@@ -83,8 +83,8 @@ function Sling:InitSling()
       { label = 'Continue' },
     }
   }, function(selected, scrollIndex, args)
-    Sling:Debug("info", "Selected weapon: " .. selectData.weapon)
-    Sling:Debug("info", "Selected bone: " .. selectData.boneId)
+    Debug("info", "Selected weapon: " .. selectData.weapon)
+    Debug("info", "Selected bone: " .. selectData.boneId)
     Sling:StartPositioning(selectData)
   end)
 end
@@ -305,7 +305,7 @@ function Sling:StartConfiguration(isPreset)
 end
 
 function Sling:InitCommands()
-  Sling:Debug("info", "Initializing commands")
+  Debug("info", "Initializing commands")
   local admin = lib.callback.await("force-sling:callback:isPlayerAdmin", false)
   if Config.Debug or admin.isAdmin then
     RegisterCommand(Config.Command.name, function(source, args, raw)
@@ -333,11 +333,5 @@ function Sling:InitCommands()
     end, false)
   end
 
-  Sling:Debug("info", "Commands initialized")
-end
-
-function Sling:Debug(type, message)
-  if not Config.Debug then return end
-  local func = lib.print[type] or lib.print.info
-  func(message)
+  Debug("info", "Commands initialized")
 end
