@@ -29,7 +29,7 @@ Config.Admin = {
 -- @field [string] Framework.resource - Resource name for ESX or QBCore
 Config.Framework = {
   name = "auto",
-  resource = "es_extended"
+  resource = "auto"
 }
 
 -- Inventory configuration settings

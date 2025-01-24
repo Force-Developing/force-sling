@@ -1,7 +1,7 @@
 lib.locale(Config.Locale);
 
-Sling:InitFramework()
-Sling:LoadInventory()
+InitFramework()
+InitInventory()
 
 CreateThread(function()
   while not IsPlayerLoaded() do
