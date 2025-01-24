@@ -67,14 +67,10 @@ Config.Presets = {
 -- @field [table] Bones - Configuration for weapon attachment bones
 -- @field [number] Bones.Back - Bone ID for back attachment
 -- @field [number] Bones.Front - Bone ID for front attachment
-Config.Bones = setmetatable({
-  BACK = 24816,
-  FRONT = 10706
-}, {
-  __index = function(_, key)
-    return 24816 -- Default to BACK bone if invalid key
-  end
-})
+Config.Bones = {
+  Back = 24816,
+  Front = 10706
+}
 
 -- Editable weapon configuration settings
 -- @field [table] Weapons - Configuration for editable weapons

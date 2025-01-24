@@ -148,11 +148,11 @@ function Sling:OnPositioningDone(coords, selectData)
   }
   if Sling.cachedAttachments[selectData.weaponName] then
     if DoesEntityExist(Sling.cachedAttachments[selectData.weaponName].obj) or DoesEntityExist(Sling.cachedAttachments[selectData.weaponName].placeholder) then
-      DeleteEntity(Sling.cachedAttachments[selectData.weaponName].obj)
-      DeleteEntity(Sling.cachedAttachments[selectData.weaponName].placeholder)
+      DeleteObject(Sling.cachedAttachments[selectData.weaponName].obj)
+      DeleteObject(Sling.cachedAttachments[selectData.weaponName].placeholder)
     end
   end
-  DeleteEntity(Sling.object)
+  DeleteObject(Sling.object)
   SetModelAsNoLongerNeeded(selectData.weapon)
 end
 
@@ -175,7 +175,7 @@ function Sling:StartPositioning(selectData)
   }
 
   if Sling.cachedAttachments[selectData.weaponName] and DoesEntityExist(Sling.cachedAttachments[selectData.weaponName].obj) then
-    DeleteEntity(Sling.cachedAttachments[selectData.weaponName].obj)
+    Utils:DeleteWeapon(selectData.weaponName)
   end
   if Sling.cachedPositions[selectData.weaponName] and selectData.boneId == Sling.cachedPositions[selectData.weaponName].boneId then
     coords.position = Sling.cachedPositions[selectData.weaponName].coords
@@ -189,16 +189,34 @@ function Sling:StartPositioning(selectData)
   CreateThread(function()
     local speed = DEFAULT_SPEED
     local function updatePosition(axis, delta)
-      coords.position[axis] = lib.math.clamp(coords.position[axis] + delta, -POSITION_CLAMP, POSITION_CLAMP)
+      local x, y, z = coords.position.x, coords.position.y, coords.position.z
+      if axis == 'x' then
+        x = lib.math.clamp(x + delta, -POSITION_CLAMP, POSITION_CLAMP)
+      elseif axis == 'y' then
+        y = lib.math.clamp(y + delta, -POSITION_CLAMP, POSITION_CLAMP)
+      elseif axis == 'z' then
+        z = lib.math.clamp(z + delta, -POSITION_CLAMP, POSITION_CLAMP)
+      end
+      coords.position = vec3(x, y, z)
       AttachEntityToEntity(Sling.object, cache.ped, GetPedBoneIndex(cache.ped, selectData.boneId),
-        coords.position.x, coords.position.y, coords.position.z, coords.rotation.x, coords.rotation.y, coords.rotation.z,
+        coords.position.x, coords.position.y, coords.position.z,
+        coords.rotation.x, coords.rotation.y, coords.rotation.z,
         true, true, false, true, 2, true)
     end
 
     local function updateRotation(axis, delta)
-      coords.rotation[axis] = coords.rotation[axis] + delta
+      local x, y, z = coords.rotation.x, coords.rotation.y, coords.rotation.z
+      if axis == 'x' then
+        x = x + delta
+      elseif axis == 'y' then
+        y = y + delta
+      elseif axis == 'z' then
+        z = z + delta
+      end
+      coords.rotation = vec3(x, y, z)
       AttachEntityToEntity(Sling.object, cache.ped, GetPedBoneIndex(cache.ped, selectData.boneId),
-        coords.position.x, coords.position.y, coords.position.z, coords.rotation.x, coords.rotation.y, coords.rotation.z,
+        coords.position.x, coords.position.y, coords.position.z,
+        coords.rotation.x, coords.rotation.y, coords.rotation.z,
         true, true, false, true, 2, true)
     end
 
@@ -223,7 +241,7 @@ function Sling:StartPositioning(selectData)
 
       -- Backspace cancel
       if IsDisabledControlJustPressed(0, 177) then
-        DeleteEntity(Sling.object)
+        DeleteObject(Sling.object)
         Sling.inPositioning = false
         lib.hideTextUI()
         SetModelAsNoLongerNeeded(selectData.weapon)
