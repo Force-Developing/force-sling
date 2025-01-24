@@ -132,12 +132,12 @@ function Sling:OnPositioningDone(coords, selectData)
   lib.hideTextUI()
   Sling.inPositioning = false
   local weapon = selectData.weapon
-  coords.position = vector3(coords.position.x, coords.position.y, coords.position.z)
-  local distanceFromMiddle = #(coords.position - vector3(0.0, 0.0, 0.0))
-  local distanceFromMiddle2 = #(coords.position - vector3(0.0, 0.0, -0.2))
-  local distanceFromMiddle3 = #(coords.position - vector3(0.0, 0.0, 0.2))
+  coords.position = vec3(coords.position.x, coords.position.y, coords.position.z)
+  local distanceFromMiddle = #(coords.position - vec3(0.0, 0.0, 0.0))
+  local distanceFromMiddle2 = #(coords.position - vec3(0.0, 0.0, -0.2))
+  local distanceFromMiddle3 = #(coords.position - vec3(0.0, 0.0, 0.2))
   if distanceFromMiddle < 0.14 or distanceFromMiddle2 < 0.14 or distanceFromMiddle3 < 0.14 then
-    coords.position = vector3(coords.position.x, 0.17, coords.position.z)
+    coords.position = vec3(coords.position.x, 0.17, coords.position.z)
   end
   TriggerServerEvent("force-sling:server:saveWeaponPosition", coords.position, coords.rotation, weapon,
     selectData.weaponName, selectData.boneId, Sling.isPreset)
@@ -156,9 +156,13 @@ function Sling:OnPositioningDone(coords, selectData)
 end
 
 local function DisableControls()
-  local controls = { 25, 44, 45, 51, 140, 141, 143, 263, 264, 24, 96, 97, 47, 74, 177 }
-  for _, control in ipairs(controls) do
-    DisableControlAction(0, control, true)
+  -- Cache controls table outside function
+  local controls = {
+    25, 44, 45, 51, 140, 141, 143,
+    263, 264, 24, 96, 97, 47, 74, 177
+  }
+  for i = 1, #controls do -- Use numeric for loop
+    DisableControlAction(0, controls[i], true)
   end
 end
 
@@ -168,8 +172,8 @@ function Sling:StartPositioning(selectData)
     return { x = x or 0, y = y or 0, z = z or 0 }
   end
   local coords = {
-    position = vector3(0.0, 0.0, 0.0),
-    rotation = vector3(0.0, 0.0, 0.0)
+    position = vec3(0.0, 0.0, 0.0),
+    rotation = vec3(0.0, 0.0, 0.0)
   }
 
   if Sling.cachedAttachments[selectData.weaponName] and DoesEntityExist(Sling.cachedAttachments[selectData.weaponName].obj) then

@@ -1,9 +1,22 @@
 Utils = {}
 
 function Utils:CreateAndAttachWeapon(weaponName, weaponVal, coords, playerPed)
-  if Sling.currentAttachedAmount >= Config.MaxWeaponsAttached then return end
-  local weaponObject = CreateWeaponObject(weaponVal.name, 0, coords.coords.x, coords.coords.y, coords.coords.z, true,
-    1.0, 0)
+  if Sling.currentAttachedAmount >= Config.MaxWeaponsAttached then
+    Sling:Debug("warn", "Max weapons attached reached")
+    return false
+  end
+
+  if not weaponVal or not weaponVal.name then
+    Sling:Debug("error", "Invalid weapon data")
+    return false
+  end
+
+  local weaponObject = CreateWeaponObject(weaponVal.name, 0, coords.coords.x, coords.coords.y, coords.coords.z, true, 1.0, 0)
+  if not weaponObject then
+    Sling:Debug("error", "Failed to create weapon object")
+    return false
+  end
+
   if NetworkGetEntityIsNetworked(weaponObject) then
     NetworkUnregisterNetworkedEntity(weaponObject)
   end
@@ -25,6 +38,8 @@ function Utils:CreateAndAttachWeapon(weaponName, weaponVal, coords, playerPed)
   Sling.cachedAttachments[weaponName].placeholder = placeholder
   Sling.currentAttachedAmount = Sling.currentAttachedAmount + 1
   SetModelAsNoLongerNeeded(weaponVal.model)
+
+  return true
 end
 
 function Utils:DeleteWeapon(weaponName)
