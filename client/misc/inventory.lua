@@ -3,7 +3,7 @@ Inventory = {}
 local function SafeInventoryCall(fn)
   local success, result = pcall(fn)
   if not success then
-    Sling:Debug("error", "Inventory error: " .. tostring(result))
+    Debug("error", "Inventory error: " .. tostring(result))
     return nil
   end
   return result
@@ -16,7 +16,7 @@ function Inventory:GetWeapons()
   local userInventory = self:GetUserInventory()
 
   if not userInventory then
-    Sling:Debug("warn", "Unsupported inventory system: " .. tostring(Config.Inventory))
+    Debug("warn", "Unsupported inventory system: " .. tostring(Config.Inventory))
     return weapons
   end
 
@@ -26,7 +26,7 @@ function Inventory:GetWeapons()
       if v.name:lower() == key:lower() then
         weapons[key] = val
         weapons[key].attachments = self:GetWeaponAttachment(key)
-        Sling:Debug("info", "Weapon found: " .. key)
+        Debug("info", "Weapon found: " .. key)
         break
       end
     end
@@ -44,7 +44,7 @@ function Inventory:GetWeaponAttachment(item)
   local userInventory = self:GetUserInventory()
 
   if not userInventory then
-    Sling:Debug("warn", "Unsupported inventory system: " .. tostring(Config.Inventory))
+    Debug("warn", "Unsupported inventory system: " .. tostring(Config.Inventory))
     return components
   end
 
@@ -53,7 +53,7 @@ function Inventory:GetWeaponAttachment(item)
     if v.name:lower() == item:lower() and v.info and v.info.attachments then
       for _, attachment in pairs(v.info.attachments) do
         table.insert(components, attachment.component)
-        Sling:Debug("info", "Attachment found for weapon: " .. item .. " component: " .. attachment?.component)
+        Debug("info", "Attachment found for weapon: " .. item .. " component: " .. attachment?.component)
       end
     end
   end

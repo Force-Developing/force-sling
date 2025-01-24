@@ -16,6 +16,7 @@ Config.Locale = "en"
 Config.Admin = {
   Global = {
     enabled = true,
+    ace = "admin",                  -- Ace permission required for global admin access, set to false to disable
     players = {
       "discord:453870580374962177", -- Force
       "discord:566930948986241024", -- Olpis
@@ -66,10 +67,14 @@ Config.Presets = {
 -- @field [table] Bones - Configuration for weapon attachment bones
 -- @field [number] Bones.Back - Bone ID for back attachment
 -- @field [number] Bones.Front - Bone ID for front attachment
-Config.Bones = {
-  ["Back"] = 24816,
-  ["Front"] = 10706
-}
+Config.Bones = setmetatable({
+  BACK = 24816,
+  FRONT = 10706
+}, {
+  __index = function(_, key)
+    return 24816 -- Default to BACK bone if invalid key
+  end
+})
 
 -- Editable weapon configuration settings
 -- @field [table] Weapons - Configuration for editable weapons
@@ -140,4 +145,13 @@ Config.Weapons = {
   ["weapon_stone_hatchet"] = { model = `w_me_stonehatchet`, name = `weapon_stone_hatchet` },
   ["weapon_wrench"] = { model = `w_me_wrench`, name = `weapon_wrench` },
   ["weapon_candycane"] = { model = `w_me_candy_xm3`, name = `weapon_candycane` },
+}
+
+-- Use more structured configuration
+Config.Controls = {
+  POSITION_CLAMP = 0.2,
+  SPEEDS = {
+    DEFAULT = 0.001,
+    FAST = 0.01
+  }
 }

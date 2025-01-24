@@ -1,10 +1,21 @@
-local function SafeJsonOperation(operation, ...)
-  local success, result = pcall(operation, ...)
+local function SafeSavePosition(filePath, data)
+  local success, error = pcall(function()
+    local fileData = json.decode(LoadResourceFile(GetCurrentResourceName(), filePath)) or {}
+    fileData = type(fileData) == 'table' and fileData or {}
+
+    -- Merge new data
+    for k, v in pairs(data) do
+      fileData[k] = v
+    end
+
+    return SaveResourceFile(GetCurrentResourceName(), filePath, json.encode(fileData, { indent = true }), -1)
+  end)
+
   if not success then
-    Sling:Debug("error", "JSON operation failed: " .. tostring(result))
-    return nil
+    Debug("error", "Failed to save position data: " .. tostring(error))
+    return false
   end
-  return result
+  return true
 end
 
 --- @param coords table The coordinates of the weapon.
@@ -15,39 +26,34 @@ end
 --- @param isPreset boolean Whether the position is a preset.
 --- @return nil
 RegisterNetEvent("force-sling:server:saveWeaponPosition", function(coords, rot, weapon, weaponName, boneId, isPreset)
-  Sling:Debug("info", "Saving weapon position for weapon: " .. weaponName .. " isPreset: " .. tostring(isPreset))
+  Debug("info", "Saving weapon position for weapon: " .. weaponName .. " isPreset: " .. tostring(isPreset))
 
   if not isPreset then
-    local positions = SafeJsonOperation(json.decode, LoadResourceFile(GetCurrentResourceName(), "json/positions.json")) or
-        {}
-    local identifier = GetPlayerIdentifierByType(source, "license")
+    local positions = {
+      [GetPlayerIdentifierByType(source, "license")] = {
+        [weaponName] = {
+          coords = coords,
+          rot = rot,
+          boneId = boneId
+        }
+      }
+    }
 
-    if not positions[identifier] then
-      positions[identifier] = {}
+    if SafeSavePosition("json/positions.json", positions) then
+      Debug("info",
+        "Weapon position saved for player: " .. GetPlayerIdentifierByType(source, "license") .. " weapon: " .. weaponName)
     end
-
-    -- Update the weapon position for the player
-    positions[identifier][weaponName] = {
-      coords = coords,
-      rot = rot,
-      boneId = boneId
-    }
-
-    SafeJsonOperation(SaveResourceFile, GetCurrentResourceName(), "json/positions.json",
-      json.encode(positions, { indent = true }), -1)
-    Sling:Debug("info", "Weapon position saved for player: " .. identifier .. " weapon: " .. weaponName)
   else
-    local presets = SafeJsonOperation(json.decode, LoadResourceFile(GetCurrentResourceName(), "json/presets.json")) or {}
-
-    -- Update the weapon preset
-    presets[weaponName] = {
-      coords = coords,
-      rot = rot,
-      boneId = boneId
+    local presets = {
+      [weaponName] = {
+        coords = coords,
+        rot = rot,
+        boneId = boneId
+      }
     }
 
-    SafeJsonOperation(SaveResourceFile, GetCurrentResourceName(), "json/presets.json",
-      json.encode(presets, { indent = true }), -1)
-    Sling:Debug("info", "Weapon preset saved for weapon: " .. weaponName)
+    if SafeSavePosition("json/presets.json", presets) then
+      Debug("info", "Weapon preset saved for weapon: " .. weaponName)
+    end
   end
 end)
