@@ -27,8 +27,7 @@ function InitFramework()
   Debug("info", "Initializing framework")
   for _, framework in ipairs(frameworks) do
     if IsResourceStartingOrStarted(framework.resource) then
-      Config.Framework.name = framework.name
-      Config.Framework.resource = framework.resource
+      Config.Framework = framework
       return
     end
   end

@@ -22,6 +22,9 @@ function Utils:CreateAndAttachWeapon(weaponName, weaponVal, coords, playerPed)
     NetworkUnregisterNetworkedEntity(weaponObject)
   end
   SetEntityCollision(weaponObject, false, false)
+  if Config.UseWeaponAttachments then
+    weaponVal.attachments = Inventory:GetWeaponAttachment(weaponName)
+  end
   for _, component in pairs(weaponVal.attachments) do
     GiveWeaponComponentToWeaponObject(weaponObject, component)
   end
@@ -49,7 +52,9 @@ function Utils:DeleteWeapon(weaponName)
     NetworkUnregisterNetworkedEntity(attachment.obj)
   end
   DeleteObject(attachment.obj)
-  DetachEntity(attachment.placeholder, true, false)
+  if IsEntityAttachedToAnyPed(attachment.placeholder) then
+    DetachEntity(attachment.placeholder, true, false)
+  end
   DeleteObject(attachment.placeholder)
   Sling.currentAttachedAmount = Sling.currentAttachedAmount - 1
 end
