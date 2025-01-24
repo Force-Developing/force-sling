@@ -53,7 +53,7 @@ function Inventory:GetWeaponAttachment(item)
     if v.name:lower() == item:lower() and v.info and v.info.attachments then
       for _, attachment in pairs(v.info.attachments) do
         table.insert(components, attachment.component)
-        Sling:Debug("info", "Attachment found for weapon: " .. item .. " component: " .. attachment.component)
+        Sling:Debug("info", "Attachment found for weapon: " .. item .. " component: " .. attachment?.component)
       end
     end
   end
