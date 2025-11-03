@@ -299,10 +299,18 @@ function Sling:StartPositioning(selectData)
   end)
 end
 
+exports("StartPositioning", function(selectData)
+  Sling:StartPositioning(selectData)
+end)
+
 function Sling:StartConfiguration(isPreset)
   Sling.isPreset = isPreset
   lib.showMenu('sling_select')
 end
+
+exports("StartConfiguration", function(isPreset)
+  Sling:StartConfiguration(isPreset)
+end)
 
 function Sling:InitCommands()
   Debug("info", "Initializing commands")
