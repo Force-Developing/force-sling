@@ -74,6 +74,8 @@ function Inventory:GetUserInventory()
     return exports.ox_inventory:GetPlayerItems()
   elseif Config.Inventory == "custom" then
     return CustomInventory:GetWeapons()
+  elseif Config.Inventory == "tgiann-inventory" then
+    return SafeInventoryCall(function() return exports['tgiann-inventory']:GetPlayerItems() end)
   else
     return nil
   end

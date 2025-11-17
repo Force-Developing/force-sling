@@ -40,7 +40,8 @@ function InitInventory()
     { name = "qs-inventory",   resource = "qs-inventory" },
     { name = "core_inventory", resource = "core_inventory" },
     { name = "qb-inventory",   resource = "qb-inventory" },
-    { name = "ox_inventory",   resource = "ox_inventory" }
+    { name = "ox_inventory",   resource = "ox_inventory" },
+    { name = "tgiann-inventory", resource = "tgiann-inventory" }
   }
 
   Debug("info", "Initializing inventory")
