@@ -9,6 +9,43 @@ local function SafeInventoryCall(fn)
   return result
 end
 
+-- ox_inventory event handler for item count changes
+AddEventHandler('ox_inventory:itemCount', function(itemName, count)
+  if Config.Inventory ~= "ox_inventory" then return end
+
+  local item = itemName:lower()
+
+  -- Check if this item is a configured weapon
+  for k, v in pairs(Config.Weapons) do
+    if item == k:lower() then
+      if count > 0 then
+        -- Weapon was added to inventory
+        Sling.cachedWeapons[item] = v
+        Sling.cachedWeapons[item].attachments = Inventory:GetWeaponAttachment(item)
+        Debug("info", "Weapon added to sling cache: " .. item)
+      else
+        -- Weapon was removed from inventory (dropped, sold, etc.)
+        if Sling.cachedAttachments[item] then
+          if DoesEntityExist(Sling.cachedAttachments[item].obj) or DoesEntityExist(Sling.cachedAttachments[item].placeholder) then
+            DeleteEntity(Sling.cachedAttachments[item].obj)
+            if NetworkGetEntityIsNetworked(Sling.cachedAttachments[item].obj) then
+              NetworkUnregisterNetworkedEntity(Sling.cachedAttachments[item].obj)
+            end
+            DeleteObject(Sling.cachedAttachments[item].obj)
+            DetachEntity(Sling.cachedAttachments[item].placeholder, true, false)
+            DeleteObject(Sling.cachedAttachments[item].placeholder)
+            Sling.currentAttachedAmount = Sling.currentAttachedAmount - 1
+          end
+          Sling.cachedAttachments[item] = nil
+        end
+        Sling.cachedWeapons[item] = nil
+        Debug("info", "Weapon removed from sling cache: " .. item)
+      end
+      break
+    end
+  end
+end)
+
 --- Retrieves the player's weapons from the inventory.
 --- @return table A table containing the player's weapons.
 function Inventory:GetWeapons()
