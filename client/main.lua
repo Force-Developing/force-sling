@@ -4,7 +4,7 @@ InitFramework()
 InitInventory()
 
 CreateThread(function()
-  while not IsPlayerLoaded() do
+  while not IsPlayerLoaded and not IsPlayerLoaded() do
     Wait(100)
   end
 
