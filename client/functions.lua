@@ -31,7 +31,6 @@ function Sling:InitSling()
   local libCallbackAwait = lib.callback.await
   Sling.cachedPositions = libCallbackAwait("force-sling:callback:getCachedPositions", false)
   Sling.cachedPresets = libCallbackAwait("force-sling:callback:getCachedPresets", false)
-  Sling.cachedWeapons = Inventory:GetWeapons()
   Sling:WeaponThread()
 
   local function loadBoneOptions()
@@ -89,38 +88,49 @@ function Sling:InitSling()
   end)
 end
 
+local DEFAULT_POSITION = {
+  coords = { x = 0.0, y = -0.15, z = 0.0 },
+  rot = { x = 0.0, y = 0.0, z = 0.0 },
+  boneId = DEFAULT_BONE
+}
+
+--- Rebuilds cachedWeapons from the live inventory. Reading the inventory every tick (instead of
+--- relying on add/remove events) means weapons show up once the inventory has loaded after join,
+--- and props disappear as soon as the weapon leaves the inventory (drop, trunk, stash, sold).
+--- Inventories without a readable item list (ESX default) keep using the framework events.
+function Sling:SyncWeapons()
+  local inventory = Inventory:GetUserInventory()
+  if not inventory then return end
+  Sling.cachedWeapons = Inventory:GetWeapons(inventory)
+end
+
 function Sling:WeaponThread()
-  local function handleWeaponAttachment(weaponName, weaponVal, playerPed, weapon)
-    if not Sling.cachedAttachments[weaponName] then
-      Sling.cachedAttachments[weaponName] = {}
-    end
-
-    if weapon == weaponVal.name then
-      if DoesEntityExist(Sling.cachedAttachments[weaponName].obj) then
-        Utils:DeleteWeapon(weaponName)
-      end
-    else
-      if not DoesEntityExist(Sling.cachedAttachments[weaponName].obj) then
-        local coords = Sling.cachedPositions[weaponName] or Sling.cachedPresets[weaponName] or
-            { coords = { x = 0.0, y = -0.15, z = 0.0 }, rot = { x = 0.0, y = 0.0, z = 0.0 }, boneId = DEFAULT_BONE }
-        Utils:CreateAndAttachWeapon(weaponName, weaponVal, coords, playerPed)
-      else
-        if not IsEntityAttachedToAnyPed(Sling.cachedAttachments[weaponName].placeholder) then
-          Utils:DeleteWeapon(weaponName)
-        end
-      end
-    end
-  end
-
   CreateThread(function()
     while true do
-      local weapon = GetSelectedPedWeapon(cache.ped)
       while Sling.inPositioning do
         Wait(1000)
       end
 
+      Sling:SyncWeapons()
+
+      local playerPed = cache.ped
+      local selectedWeapon = GetSelectedPedWeapon(playerPed)
+
+      -- Remove props for weapons that are in hand, no longer owned, or attached to an old ped (model change)
+      for weaponName, attachment in pairs(Sling.cachedAttachments) do
+        local weaponVal = Sling.cachedWeapons[weaponName]
+        if not weaponVal or selectedWeapon == weaponVal.name
+            or not DoesEntityExist(attachment.obj)
+            or not IsEntityAttachedToEntity(attachment.placeholder, playerPed) then
+          Utils:DeleteWeapon(weaponName)
+        end
+      end
+
       for weaponName, weaponVal in pairs(Sling.cachedWeapons) do
-        handleWeaponAttachment(weaponName, weaponVal, cache.ped, weapon)
+        if selectedWeapon ~= weaponVal.name and not Sling.cachedAttachments[weaponName] then
+          local coords = Sling.cachedPositions[weaponName] or Sling.cachedPresets[weaponName] or DEFAULT_POSITION
+          Utils:CreateAndAttachWeapon(weaponName, weaponVal, coords, playerPed)
+        end
       end
 
       Wait(1000)
@@ -146,12 +156,8 @@ function Sling:OnPositioningDone(coords, selectData)
     rot = coords.rotation,
     boneId = selectData.boneId
   }
-  if Sling.cachedAttachments[selectData.weaponName] then
-    if DoesEntityExist(Sling.cachedAttachments[selectData.weaponName].obj) or DoesEntityExist(Sling.cachedAttachments[selectData.weaponName].placeholder) then
-      DeleteObject(Sling.cachedAttachments[selectData.weaponName].obj)
-      DeleteObject(Sling.cachedAttachments[selectData.weaponName].placeholder)
-    end
-  end
+  -- Recreated by WeaponThread with the new position
+  Utils:DeleteWeapon(selectData.weaponName)
   DeleteObject(Sling.object)
   SetModelAsNoLongerNeeded(selectData.weapon)
 end
@@ -173,9 +179,7 @@ function Sling:StartPositioning(selectData)
     rotation = vec3(0.0, 0.0, 0.0)
   }
 
-  if Sling.cachedAttachments[selectData.weaponName] and DoesEntityExist(Sling.cachedAttachments[selectData.weaponName].obj) then
-    Utils:DeleteWeapon(selectData.weaponName)
-  end
+  Utils:DeleteWeapon(selectData.weaponName)
   if Sling.cachedPositions[selectData.weaponName] and selectData.boneId == Sling.cachedPositions[selectData.weaponName].boneId then
     coords.position = Sling.cachedPositions[selectData.weaponName].coords
     coords.rotation = Sling.cachedPositions[selectData.weaponName].rot
@@ -314,32 +318,38 @@ end)
 
 function Sling:InitCommands()
   Debug("info", "Initializing commands")
+  -- false for regular players, otherwise the admin type (e.g. "global")
   local admin = lib.callback.await("force-sling:callback:isPlayerAdmin", false)
-  if Config.Debug or admin.isAdmin then
-    RegisterCommand(Config.Command.name, function(source, args, raw)
-      if Config.Command.permission ~= "any" and admin ~= Config.Command.permission then return end
-      Sling:StartConfiguration(false)
-    end, false)
 
-    RegisterCommand(Config.Command.reset, function(source, args, raw)
-      if Config.Command.permission ~= "any" and admin ~= Config.Command.permission then return end
-      local weapon = args[1] and args[1]:lower() or GetSelectedPedWeapon(cache.ped)
-      if type(weapon) == "number" then
-        for weaponName, weaponVal in pairs(Sling.cachedWeapons) do
-          if weaponVal.name == weapon then
-            weapon = weaponName
-            break
-          end
+  local function hasPermission(permission)
+    return permission == "any" or (admin and admin == permission)
+  end
+
+  RegisterCommand(Config.Command.name, function(source, args, raw)
+    if not hasPermission(Config.Command.permission) then return end
+    Sling:StartConfiguration(false)
+  end, false)
+
+  RegisterCommand(Config.Command.reset, function(source, args, raw)
+    if not hasPermission(Config.Command.permission) then return end
+    local weapon = args[1] and args[1]:lower() or GetSelectedPedWeapon(cache.ped)
+    if type(weapon) == "number" then
+      for weaponName, weaponVal in pairs(Sling.cachedWeapons) do
+        if weaponVal.name == weapon then
+          weapon = weaponName
+          break
         end
       end
-      Sling.cachedPositions = lib.callback.await("force-sling:callback:resetWeaponPositions", false, weapon)
-    end, false)
+    end
+    Sling.cachedPositions = lib.callback.await("force-sling:callback:resetWeaponPositions", false, weapon)
+    Utils:DeleteWeapon(weapon)
+  end, false)
 
-    RegisterCommand(Config.Presets.command, function(source, args, raw)
-      if Config.Presets.permission ~= "any" and admin ~= Config.Presets.permission then return end
-      Sling:StartConfiguration(true)
-    end, false)
-  end
+  RegisterCommand(Config.Presets.command, function(source, args, raw)
+    if not hasPermission(Config.Presets.permission) then return end
+    Sling:StartConfiguration(true)
+  end, false)
 
   Debug("info", "Commands initialized")
 end
+

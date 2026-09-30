@@ -17,7 +17,7 @@ function Debug(level, message, ...)
 end
 
 function InitFramework()
-  if not Config.Framework.name == "auto" then return end
+  if Config.Framework.name ~= "auto" then return end
   local frameworks = {
     { name = "esx",    resource = "es_extended" },
     { name = "qbx",    resource = "qbx_core" },
@@ -35,7 +35,7 @@ function InitFramework()
 end
 
 function InitInventory()
-  if not Config.Inventory == "auto" then return end
+  if Config.Inventory ~= "auto" then return end
   local inventories = {
     { name = "qs-inventory",   resource = "qs-inventory" },
     { name = "core_inventory", resource = "core_inventory" },

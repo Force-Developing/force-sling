@@ -10,6 +10,7 @@ end
 
 RegisterNetEvent("esx:addInventoryItem")
 AddEventHandler("esx:addInventoryItem", function(item)
+  item = item:lower()
   for k, v in pairs(Config.Weapons) do
     if item == k then
       Sling.cachedWeapons[item] = v
@@ -21,15 +22,6 @@ end)
 
 RegisterNetEvent("esx:removeInventoryItem")
 AddEventHandler("esx:removeInventoryItem", function(item)
-  for k, v in pairs(Config.Weapons) do
-    if item == k then
-      Sling.cachedWeapons[item] = nil
-      if Sling.cachedAttachments[item] then
-        if DoesEntityExist(Sling.cachedAttachments[item].obj) then
-          DeleteEntity(Sling.cachedAttachments[item].obj)
-        end
-      end
-      break;
-    end
-  end
+  -- WeaponThread removes the prop once the weapon is gone from cachedWeapons
+  Sling.cachedWeapons[item:lower()] = nil
 end)

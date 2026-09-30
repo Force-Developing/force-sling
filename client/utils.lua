@@ -2,19 +2,19 @@ Utils = {}
 
 function Utils:CreateAndAttachWeapon(weaponName, weaponVal, coords, playerPed)
   if Sling.currentAttachedAmount >= Config.MaxWeaponsAttached then
-    Sling:Debug("warn", "Max weapons attached reached")
+    Debug("warn", "Max weapons attached reached")
     return false
   end
 
   if not weaponVal or not weaponVal.name then
-    Sling:Debug("error", "Invalid weapon data")
+    Debug("error", "Invalid weapon data")
     return false
   end
 
   local weaponObject = CreateWeaponObject(weaponVal.name, 0, coords.coords.x, coords.coords.y, coords.coords.z, true, 1.0,
     0)
-  if not weaponObject then
-    Sling:Debug("error", "Failed to create weapon object")
+  if not weaponObject or weaponObject == 0 then
+    Debug("error", "Failed to create weapon object")
     return false
   end
 
@@ -22,10 +22,7 @@ function Utils:CreateAndAttachWeapon(weaponName, weaponVal, coords, playerPed)
     NetworkUnregisterNetworkedEntity(weaponObject)
   end
   SetEntityCollision(weaponObject, false, false)
-  if Config.UseWeaponAttachments then
-    weaponVal.attachments = Inventory:GetWeaponAttachment(weaponName)
-  end
-  for _, component in pairs(weaponVal.attachments) do
+  for _, component in pairs(weaponVal.attachments or {}) do
     GiveWeaponComponentToWeaponObject(weaponObject, component)
   end
   lib.requestModel(weaponVal.model)
@@ -38,23 +35,32 @@ function Utils:CreateAndAttachWeapon(weaponName, weaponVal, coords, playerPed)
     true, 2, true)
   AttachEntityToEntity(weaponObject, placeholder, GetEntityBoneIndexByName(placeholder, "gun_root"), 0.0, 0.0, 0.0, 0.0,
     0.0, 0.0, true, true, false, true, 2, true)
-  Sling.cachedAttachments[weaponName].obj = weaponObject
-  Sling.cachedAttachments[weaponName].placeholder = placeholder
+  Sling.cachedAttachments[weaponName] = { obj = weaponObject, placeholder = placeholder }
   Sling.currentAttachedAmount = Sling.currentAttachedAmount + 1
   SetModelAsNoLongerNeeded(weaponVal.model)
 
   return true
 end
 
+--- Deletes a slung weapon prop. This is the only place that removes attachments,
+--- so currentAttachedAmount always matches the number of cachedAttachments entries.
 function Utils:DeleteWeapon(weaponName)
   local attachment = Sling.cachedAttachments[weaponName]
-  if NetworkGetEntityIsNetworked(attachment.obj) then
-    NetworkUnregisterNetworkedEntity(attachment.obj)
+  if not attachment then return end
+
+  if DoesEntityExist(attachment.obj) then
+    if NetworkGetEntityIsNetworked(attachment.obj) then
+      NetworkUnregisterNetworkedEntity(attachment.obj)
+    end
+    DeleteObject(attachment.obj)
   end
-  DeleteObject(attachment.obj)
-  if IsEntityAttachedToAnyPed(attachment.placeholder) then
-    DetachEntity(attachment.placeholder, true, false)
+  if DoesEntityExist(attachment.placeholder) then
+    if IsEntityAttachedToAnyPed(attachment.placeholder) then
+      DetachEntity(attachment.placeholder, true, false)
+    end
+    DeleteObject(attachment.placeholder)
   end
-  DeleteObject(attachment.placeholder)
-  Sling.currentAttachedAmount = Sling.currentAttachedAmount - 1
+
+  Sling.cachedAttachments[weaponName] = nil
+  Sling.currentAttachedAmount = math.max(Sling.currentAttachedAmount - 1, 0)
 end

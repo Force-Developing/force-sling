@@ -3,8 +3,15 @@ local function SafeSavePosition(filePath, data)
     local fileData = json.decode(LoadResourceFile(GetCurrentResourceName(), filePath)) or {}
     fileData = type(fileData) == 'table' and fileData or {}
 
+    -- Merge one level deep so saving one weapon doesn't wipe the player's other weapons
     for k, v in pairs(data) do
-      fileData[k] = v
+      if type(v) == 'table' and type(fileData[k]) == 'table' then
+        for weaponName, position in pairs(v) do
+          fileData[k][weaponName] = position
+        end
+      else
+        fileData[k] = v
+      end
     end
 
     return SaveResourceFile(GetCurrentResourceName(), filePath, json.encode(fileData, { indent = true }), -1)
