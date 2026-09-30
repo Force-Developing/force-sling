@@ -1,5 +1,39 @@
 Utils = {}
 
+local skippedWeapons = {}
+
+--- Loads the prop model and weapon asset. Addon weapons aren't preloaded like base game weapons,
+--- and a wrong model in Config.Weapons would otherwise throw and stop the whole weapon thread.
+--- @return boolean
+function Utils:LoadWeaponAssets(weaponName, weaponVal)
+  if skippedWeapons[weaponName] then return false end
+
+  local function skip(reason)
+    skippedWeapons[weaponName] = true
+    lib.print.warn(("Skipping %s: %s. Check its entry in Config.Weapons and that the addon weapon is streamed.")
+      :format(weaponName, reason))
+    return false
+  end
+
+  if not weaponVal.model or not IsModelInCdimage(weaponVal.model) then
+    return skip("model not found")
+  end
+  if not pcall(lib.requestModel, weaponVal.model) then
+    return skip("model failed to load")
+  end
+
+  RequestWeaponAsset(weaponVal.name, 31, 0)
+  local timeout = GetGameTimer() + 5000
+  while not HasWeaponAssetLoaded(weaponVal.name) and GetGameTimer() < timeout do
+    Wait(10)
+  end
+  if not HasWeaponAssetLoaded(weaponVal.name) then
+    return skip("weapon asset failed to load")
+  end
+
+  return true
+end
+
 function Utils:CreateAndAttachWeapon(weaponName, weaponVal, coords, playerPed)
   if Sling.currentAttachedAmount >= Config.MaxWeaponsAttached then
     Debug("warn", "Max weapons attached reached")
@@ -8,6 +42,10 @@ function Utils:CreateAndAttachWeapon(weaponName, weaponVal, coords, playerPed)
 
   if not weaponVal or not weaponVal.name then
     Debug("error", "Invalid weapon data")
+    return false
+  end
+
+  if not self:LoadWeaponAssets(weaponName, weaponVal) then
     return false
   end
 
@@ -25,7 +63,6 @@ function Utils:CreateAndAttachWeapon(weaponName, weaponVal, coords, playerPed)
   for _, component in pairs(weaponVal.attachments or {}) do
     GiveWeaponComponentToWeaponObject(weaponObject, component)
   end
-  lib.requestModel(weaponVal.model)
   local placeholder = CreateObjectNoOffset(weaponVal.model, coords.coords.x, coords.coords.y, coords.coords.z, true,
     true, false)
   SetEntityCollision(placeholder, false, false)
@@ -33,7 +70,9 @@ function Utils:CreateAndAttachWeapon(weaponName, weaponVal, coords, playerPed)
   AttachEntityToEntity(placeholder, playerPed, GetPedBoneIndex(playerPed, (coords.boneId or DEFAULT_BONE)),
     coords.coords.x, coords.coords.y, coords.coords.z, coords.rot.x, coords.rot.y, coords.rot.z, true, true, false,
     true, 2, true)
-  AttachEntityToEntity(weaponObject, placeholder, GetEntityBoneIndexByName(placeholder, "gun_root"), 0.0, 0.0, 0.0, 0.0,
+  -- Addon weapon models don't always have a gun_root bone
+  local gunRoot = GetEntityBoneIndexByName(placeholder, "gun_root")
+  AttachEntityToEntity(weaponObject, placeholder, gunRoot ~= -1 and gunRoot or 0, 0.0, 0.0, 0.0, 0.0,
     0.0, 0.0, true, true, false, true, 2, true)
   Sling.cachedAttachments[weaponName] = { obj = weaponObject, placeholder = placeholder }
   Sling.currentAttachedAmount = Sling.currentAttachedAmount + 1

@@ -2,6 +2,7 @@ lib.locale(Config.Locale);
 
 InitFramework()
 InitInventory()
+NormalizeWeaponConfig()
 
 CreateThread(function()
   while not IsPlayerLoaded or not IsPlayerLoaded() do

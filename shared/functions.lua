@@ -16,6 +16,20 @@ function Debug(level, message, ...)
   fn(string.format(message, ...))
 end
 
+--- Addon weapons are often added with uppercase keys ("WEAPON_M4") or string names/models.
+--- Inventories are matched in lowercase and GetSelectedPedWeapon returns hashes, so normalize once.
+function NormalizeWeaponConfig()
+  local weapons = {}
+  for key, weapon in pairs(Config.Weapons) do
+    local name = weapon.name or key
+    weapons[key:lower()] = {
+      model = type(weapon.model) == "string" and GetHashKey(weapon.model) or weapon.model,
+      name = type(name) == "string" and GetHashKey(name) or name,
+    }
+  end
+  Config.Weapons = weapons
+end
+
 function InitFramework()
   if Config.Framework.name ~= "auto" then return end
   local frameworks = {

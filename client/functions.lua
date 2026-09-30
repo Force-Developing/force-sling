@@ -174,6 +174,10 @@ end
 
 function Sling:StartPositioning(selectData)
   if Sling.inPositioning then return end
+  if not selectData.weapon or not IsModelInCdimage(selectData.weapon) then
+    lib.print.warn(("Can't position %s: model not found. Check Config.Weapons."):format(tostring(selectData.weaponName)))
+    return
+  end
   local coords = {
     position = vec3(0.0, 0.0, 0.0),
     rotation = vec3(0.0, 0.0, 0.0)
@@ -225,8 +229,11 @@ function Sling:StartPositioning(selectData)
 
     while Sling.inPositioning do
       if not DoesEntityExist(Sling.object) then
-        if not HasModelLoaded(selectData.weapon) then
-          lib.requestModel(selectData.weapon)
+        if not HasModelLoaded(selectData.weapon) and not pcall(lib.requestModel, selectData.weapon) then
+          Sling.inPositioning = false
+          lib.hideTextUI()
+          lib.print.warn(("Can't position %s: model failed to load"):format(tostring(selectData.weaponName)))
+          break
         end
 
         Sling.object = CreateObject(selectData.weapon, 0, 0, 0, false, true, false)
