@@ -27,36 +27,48 @@ function Sling:InitMain()
   Debug("info", "Main thread initialized")
 end
 
+local menuBones, menuWeapons = {}, {}
+local selectData = {}
+
+local function sortedKeys(tbl)
+  local keys = {}
+  for key in pairs(tbl) do
+    keys[#keys + 1] = key
+  end
+  table.sort(keys)
+  return keys
+end
+
+local function indexOf(list, value)
+  for i = 1, #list do
+    if list[i] == value then return i end
+  end
+  return nil
+end
+
+local function selectWeapon(index)
+  local weaponName = menuWeapons[index]
+  selectData.weaponIndex = index
+  selectData.weaponName = weaponName
+  selectData.weapon = weaponName and Config.Weapons[weaponName].model
+end
+
+local function selectBone(index)
+  selectData.boneIndex = index
+  selectData.boneId = menuBones[index] and Config.Bones[menuBones[index]] or DEFAULT_BONE
+end
+
 function Sling:InitSling()
   local libCallbackAwait = lib.callback.await
   Sling.cachedPositions = libCallbackAwait("force-sling:callback:getCachedPositions", false)
   Sling.cachedPresets = libCallbackAwait("force-sling:callback:getCachedPresets", false)
   Sling:WeaponThread()
 
-  local function loadBoneOptions()
-    local bones = {}
-    for boneName, _ in pairs(Config.Bones) do
-      table.insert(bones, boneName)
-    end
-    return bones
-  end
-
-  local function loadWeaponOptions()
-    local weapons = {}
-    for weaponName, _ in pairs(Config.Weapons) do
-      table.insert(weapons, weaponName)
-    end
-    return weapons
-  end
-
-  local bones = loadBoneOptions()
-  local weapons = loadWeaponOptions()
-
-  local selectData = {
-    boneId = DEFAULT_BONE,
-    weapon = `w_pi_pistol50`,
-    weaponName = "weapon_pistol50"
-  }
+  -- Sorted so the menu order is stable (pairs order is random)
+  menuBones = sortedKeys(Config.Bones)
+  menuWeapons = sortedKeys(Config.Weapons)
+  selectBone(indexOf(menuBones, "Back") or 1)
+  selectWeapon(1)
 
   lib.registerMenu({
     id = 'sling_select',
@@ -64,11 +76,9 @@ function Sling:InitSling()
     position = 'top-right',
     onSideScroll = function(selected, scrollIndex, args)
       if selected == 1 then
-        selectData.boneId = Config.Bones[args[scrollIndex]]
+        selectBone(scrollIndex)
       elseif selected == 2 then
-        local weapon = Config.Weapons[args[scrollIndex]]
-        selectData.weapon = weapon.model
-        selectData.weaponName = args[scrollIndex]
+        selectWeapon(scrollIndex)
       end
     end,
     onSelected = function(selected, secondary, args)
@@ -77,12 +87,13 @@ function Sling:InitSling()
       Sling.inPositioning = false
     end,
     options = {
-      { label = 'Bone',    values = bones,   args = bones },
-      { label = 'Weapon',  values = weapons, args = weapons },
+      { label = 'Bone',   values = menuBones,   args = menuBones,   defaultIndex = selectData.boneIndex },
+      { label = 'Weapon', values = menuWeapons, args = menuWeapons, defaultIndex = selectData.weaponIndex },
       { label = 'Continue' },
     }
   }, function(selected, scrollIndex, args)
-    Debug("info", "Selected weapon: " .. selectData.weapon)
+    if not selectData.weaponName then return end
+    Debug("info", "Selected weapon: " .. selectData.weaponName)
     Debug("info", "Selected bone: " .. selectData.boneId)
     Sling:StartPositioning(selectData)
   end)
@@ -174,8 +185,22 @@ local function DisableControls()
   end
 end
 
-function Sling:StartPositioning(selectData)
+function Sling:StartPositioning(data)
   if Sling.inPositioning then return end
+  if type(data) ~= "table" or type(data.weaponName) ~= "string" then
+    lib.print.warn("StartPositioning needs a table with weaponName")
+    return
+  end
+
+  -- Copy so the caller's table isn't changed; model and bone are optional for exports
+  local weaponName = data.weaponName:lower()
+  local configured = Config.Weapons[weaponName]
+  local selectData = {
+    weaponName = weaponName,
+    weapon = data.weapon or (configured and configured.model),
+    boneId = data.boneId or DEFAULT_BONE,
+  }
+
   if not selectData.weapon or not IsModelInCdimage(selectData.weapon) then
     lib.print.warn(("Can't position %s: model not found. Check Config.Weapons."):format(tostring(selectData.weaponName)))
     return
@@ -313,11 +338,32 @@ function Sling:StartPositioning(selectData)
 end
 
 exports("StartPositioning", function(selectData)
+  if Sling.inPositioning then return end
+  -- Personal position unless explicitly asked for a preset (the server checks the permission)
+  Sling.isPreset = type(selectData) == "table" and selectData.isPreset == true
   Sling:StartPositioning(selectData)
 end)
 
 function Sling:StartConfiguration(isPreset)
-  Sling.isPreset = isPreset
+  -- The menu is registered once the player has loaded
+  if Sling.inPositioning or #menuWeapons == 0 then return end
+  Sling.isPreset = isPreset == true
+
+  -- Preselect the weapon in hand when it's configured
+  local selectedWeapon = GetSelectedPedWeapon(cache.ped)
+  for index, weaponName in ipairs(menuWeapons) do
+    if Config.Weapons[weaponName].name == selectedWeapon then
+      selectWeapon(index)
+      break
+    end
+  end
+
+  lib.setMenuOptions('sling_select', {
+    label = 'Bone', values = menuBones, args = menuBones, defaultIndex = selectData.boneIndex
+  }, 1)
+  lib.setMenuOptions('sling_select', {
+    label = 'Weapon', values = menuWeapons, args = menuWeapons, defaultIndex = selectData.weaponIndex
+  }, 2)
   lib.showMenu('sling_select')
 end
 
