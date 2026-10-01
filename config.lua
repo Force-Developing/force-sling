@@ -6,7 +6,7 @@ Config.Debug = false
 
 -- Set the locale for the application
 -- @field [string] Locale - Language code for the locale ("ar", "en", "es", "fr", "pt", "de", "nl", "pl", "ru", "sv" or "auto")
--- "auto" uses the ox_lib locale (the ox:locale convar or the player's ox_lib setting) and falls back to "en"
+-- "auto" uses the replicated ox:locale convar (setr ox:locale "sv") and falls back to "en"
 Config.Locale = "en"
 
 -- Admin configuration settings
