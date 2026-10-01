@@ -8,9 +8,9 @@ local SAVE_COOLDOWN_MS = 1000
 local lastSave = {}
 
 local function SafeSavePosition(filePath, data)
-  local success, error = pcall(function()
-    local fileData = json.decode(LoadResourceFile(GetCurrentResourceName(), filePath)) or {}
-    fileData = type(fileData) == 'table' and fileData or {}
+  local success, result = pcall(function()
+    local fileData, valid = ReadJsonFile(filePath)
+    if not valid then return false end
 
     -- Merge one level deep so saving one weapon doesn't wipe the player's other weapons
     for k, v in pairs(data) do
@@ -23,14 +23,14 @@ local function SafeSavePosition(filePath, data)
       end
     end
 
-    return SaveResourceFile(GetCurrentResourceName(), filePath, json.encode(fileData, { indent = true }), -1)
+    return WriteJsonFile(filePath, fileData)
   end)
 
   if not success then
-    Debug("error", "Failed to save position data: " .. tostring(error))
+    Debug("error", "Failed to save position data: " .. tostring(result))
     return false
   end
-  return true
+  return result == true
 end
 
 local function toFiniteNumber(value)
@@ -128,12 +128,13 @@ RegisterNetEvent("force-sling:server:saveWeaponPosition", function(coords, rot, 
       return reject(src, "no license identifier")
     end
 
-    if SafeSavePosition("json/positions.json", { [identifier] = { [configuredName] = entry } }) then
+    if SafeSavePosition(POSITIONS_FILE, { [identifier] = { [configuredName] = entry } }) then
       Debug("info", "Weapon position saved for player: " .. identifier .. " weapon: " .. configuredName)
     end
   else
-    if SafeSavePosition("json/presets.json", { [configuredName] = entry }) then
+    if SafeSavePosition(CUSTOM_PRESETS_FILE, { [configuredName] = entry }) then
       Debug("info", "Weapon preset saved for weapon: " .. configuredName)
+      TriggerClientEvent("force-sling:client:presetUpdated", -1, configuredName, entry)
     end
   end
 end)

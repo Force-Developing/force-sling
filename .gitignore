@@ -7,3 +7,8 @@
 .vscode/*
 .vscode/settings.json
 .github/*
+
+# Server data written at runtime; never ship these or updates wipe player positions
+json/positions.json
+json/presets_custom.json
+.DS_Store

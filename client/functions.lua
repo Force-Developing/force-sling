@@ -151,7 +151,9 @@ function Sling:OnPositioningDone(coords, selectData)
   end
   TriggerServerEvent("force-sling:server:saveWeaponPosition", coords.position, coords.rotation, weapon,
     selectData.weaponName, selectData.boneId, Sling.isPreset)
-  Sling.cachedPositions[selectData.weaponName] = {
+  -- Presets reach every client through force-sling:client:presetUpdated; update ours right away
+  local target = Sling.isPreset and Sling.cachedPresets or Sling.cachedPositions
+  target[selectData.weaponName] = {
     coords = coords.position,
     rot = coords.rotation,
     boneId = selectData.boneId
