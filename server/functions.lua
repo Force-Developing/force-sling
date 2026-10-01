@@ -13,9 +13,9 @@ function Sling:LoadServerCallbacks()
 
   local resourceName = GetCurrentResourceName()
   local callbacks = {
-    ["force-sling:callback:isPlayerAdmin"] = function(source, target)
-      if not target then target = source end
-      return Admin:IsPlayerAdmin(target)
+    -- Only ever answers for the caller; letting clients pass a target leaked other players' admin status
+    ["force-sling:callback:isPlayerAdmin"] = function(source)
+      return Admin:IsPlayerAdmin(source)
     end,
     ["force-sling:callback:getCachedPositions"] = function(source)
       local identifier = GetPlayerIdentifierByType(source, "license")
@@ -32,8 +32,12 @@ function Sling:LoadServerCallbacks()
         "Resetting weapon positions for source = " .. tostring(source) .. " and weapon = " .. tostring(weapon))
       local identifier = GetPlayerIdentifierByType(source, "license")
       local positions = json.decode(LoadResourceFile(resourceName, "json/positions.json")) or {}
+      local weaponName = GetConfiguredWeaponName(weapon)
+      if not identifier or not weaponName or not Admin:HasPermission(source, Config.Command.permission) then
+        return identifier and positions[identifier] or {}
+      end
       positions[identifier] = positions[identifier] or {}
-      positions[identifier][weapon] = nil
+      positions[identifier][weaponName] = nil
       SaveResourceFile(resourceName, "json/positions.json", json.encode(positions), -1)
       return positions[identifier]
     end

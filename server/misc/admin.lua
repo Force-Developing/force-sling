@@ -59,3 +59,13 @@ function Admin:getPlayerIdentifier(target, identifierType)
   Debug("info", "Player identifier for target: " .. tostring(target) .. " not found")
   return nil
 end
+
+--- Server-side counterpart of the client command permission check.
+--- @param target number The player.
+--- @param permission string "any" or an admin type such as "global".
+--- @return boolean
+function Admin:HasPermission(target, permission)
+  if permission == "any" then return true end
+  local admin = self:IsPlayerAdmin(target)
+  return admin ~= false and admin == permission
+end
