@@ -9,8 +9,8 @@ The resource allows players to manage weapon sling positions in the game, dynami
 - **Debug Mode**: Enable or disable debug mode for troubleshooting.
 - **Locale Support**: Set the locale for the resource.
 - **Admin Configuration**: Manage admin commands and permissions.
-- **Framework Support**: Compatible with ESX, QBCore, and custom frameworks.
-- **Inventory System**: Supports various inventory systems including qs-inventory, qb-inventory, core_inventory, and ox_inventory.
+- **Framework Support**: ESX, QBCore and QBox out of the box. Other frameworks through `client/custom/frameworks/custom.lua`, which you fill in for your framework.
+- **Inventory System**: Supports ox_inventory, qs-inventory, qb-inventory, core_inventory and tgiann-inventory, plus the default ESX loadout and QBCore/QBox player items. Other inventories through `client/custom/inventory.lua`.
 - **Weapon Attachments**: Enable or disable weapon attachments.
 - **Command Configuration**: Customize commands for configuring weapon positions.
 - **Preset Commands**: Use preset configurations for weapon positions.
@@ -56,8 +56,8 @@ Before setting up the resource, ensure that you have the following dependency in
    - Example:
      ```lua
      Config.Locale = "en" -- Change to your preferred language (e.g., "fr", "es", "ru").
-     Config.Framework.name = "esx" -- Set to your framework: "esx", "qbcore", or "custom".
-     Config.Inventory = "ox_inventory" -- Match your inventory system: "auto", "qs_inventory", etc.
+     Config.Framework.name = "auto" -- Or set it: "esx", "qbcore", "qbx" or "custom".
+     Config.Inventory = "auto" -- Or set it: "ox_inventory", "qs-inventory", "none", etc.
      ```
 
 4. **Add to Server Config**
@@ -82,13 +82,15 @@ The resource includes a [config.lua](https://github.com/Force-Developing/force-s
   - Enable or disable debug logging.
 - **Locale**:
   - Set the language for the system.
-  - Supported languages: `ar`, `en`, `es`, `fr`, `pt`, `de`, `nl`, `pl`, `ru`, `se`, or `auto`.
+  - Supported languages: `ar`, `en`, `es`, `fr`, `pt`, `de`, `nl`, `pl`, `ru`, `sv`, or `auto` (follows the `ox:locale` convar).
 - **Admin Tools**:
-  - Add admin player identifiers under the `Config.Admin.Global.players` array.
+  - Global admins are players with the `admin` ace (`add_ace group.admin admin allow` in `server.cfg`) or listed in `Config.Admin.Global.players` (empty by default).
 - **Framework Support**:
-  - Supports ESX, QBCore, or custom frameworks.
+  - Supports ESX, QBCore, QBox, or custom frameworks.
 - **Inventory Integration**:
-  - Compatible with popular inventory systems like `ox_inventory` and `qb_inventory`.
+  - Compatible with `ox_inventory`, `qs-inventory`, `qb-inventory`, `core_inventory` and `tgiann-inventory`.
+- **Saved data**:
+  - `json/positions.json` (player positions) and `json/presets_custom.json` (presets saved in-game) are created at runtime and kept when you update. `json/presets.json` holds the shipped defaults and is overwritten on update.
 
 Refer to the Configuration section for detailed information on each setting.
 
@@ -103,14 +105,14 @@ The resource provides several commands to manage weapon positions:
   - **Description**: Configure weapon positions.
   - **Permission**: Any player can use this command.
 
-- **`/resetsling`**
+- **`/resetsling [weapon]`**
 
-  - **Description**: Reset personal sling position to global.
+  - **Description**: Reset your personal sling position for the weapon in your hand (or the weapon you name) back to the preset.
   - **Permission**: Any player can use this command.
 
 - **`/slingpreset`**
-  - **Description**: Configure global weapon positions.
-  - **Permission**: Only admins are allowed to use this by default.
+  - **Description**: Configure global weapon positions. Saved to `json/presets_custom.json`.
+  - **Permission**: Only global admins can use this by default.
 
 Refer to the Commands section for a list of available commands and their usage.
 
