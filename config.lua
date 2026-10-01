@@ -2,24 +2,27 @@ Config = {}
 
 -- Enable or disable debug mode
 -- @field [boolean] Debug - Set to true to enable debug mode, false to disable
-Config.Debug = true
+Config.Debug = false
 
 -- Set the locale for the application
--- @field [string] Locale - Language code for the locale ("ar", "en", "es", "fr", "pt", "de", "nl", "pl", "ru", "se" or "auto")
+-- @field [string] Locale - Language code for the locale ("ar", "en", "es", "fr", "pt", "de", "nl", "pl", "ru", "sv" or "auto")
+-- "auto" uses the ox_lib locale (the ox:locale convar or the player's ox_lib setting) and falls back to "en"
 Config.Locale = "en"
 
 -- Admin configuration settings
 -- @field [table] Admin - Configuration for admin settings
 -- @field [table] Admin.Global - Global admin settings
 -- @field [boolean] Admin.Global.enabled - Enable or disable global admin commands
+-- @field [string|false] Admin.Global.ace - Ace permission that grants global admin. Grant it in server.cfg, e.g.
+--   add_ace group.admin admin allow
 -- @field [table] Admin.Global.players - List of player identifiers with admin access
 Config.Admin = {
   Global = {
     enabled = true,
-    ace = "admin",                  -- Ace permission required for global admin access, set to false to disable
+    ace = "admin", -- Ace permission required for global admin access, set to false to disable
     players = {
-      "discord:453870580374962177", -- Force
-      "discord:566930948986241024", -- Olpis
+      -- "discord:123456789012345678",
+      -- "license:abcdef0123456789abcdef0123456789abcdef01",
     }
   }
 }
@@ -27,7 +30,7 @@ Config.Admin = {
 -- Framework configuration settings
 -- @field [table] Framework - Configuration for the framework
 -- @field [string] Framework.name - Name of the framework ("esx", "qbcore", "qbx", "custom" or "auto")
--- @field [string] Framework.resource - Resource name for ESX or QBCore
+-- @field [string] Framework.resource - Resource name for ESX or QBCore ("auto" uses es_extended / qb-core)
 Config.Framework = {
   name = "auto",
   resource = "auto"
@@ -45,19 +48,18 @@ Config.MaxWeaponsAttached = 4
 -- @field [table] Command - Configuration for the sling command
 -- @field [string] Command.name - Name of the command
 -- @field [string] Command.reset - Command to reset the sling configuration
--- @field [string] Command.description - Description of the command
--- @field [string] Command.permission - Permission level required to use the command ("any" or specific permission)
+-- @field [string] Command.permission - Permission required for the sling and reset commands ("any" or "global")
 Config.Command = {
   name = "sling",
   reset = "resetsling",
-  description = "Configure weapon positions",
   permission = "any"
 }
 
 -- Preset command configuration settings
 -- @field [table] Presets - Configuration for the sling preset command
 -- @field [string] Presets.command - Name of the preset command
--- @field [string] Presets.permission - Permission level required to use the preset command ("global" or specific permission)
+-- @field [string] Presets.permission - Permission required to save presets ("global" or "any")
+-- Presets saved in-game are stored in json/presets_custom.json, which updates don't overwrite
 Config.Presets = {
   command = "slingpreset",
   permission = "global",
