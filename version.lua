@@ -1,5 +1,3 @@
-lib.versionCheck('Force-Developing/force-sling')
-
 local latestVersionUrl =
 "https://gist.githubusercontent.com/Force-Developing/ee739a3263bc3421257d901e53e27b10/raw/force-sling"
 local currentVersion = GetResourceMetadata(GetCurrentResourceName(), 'version', 0)
@@ -31,7 +29,8 @@ end
 
 local function formatChangelogs(changelogs)
   if not changelogs then return "No changelog available" end
-  return changelogs:gsub("%-", "\n-"):gsub("^%s*(.-)%s*$", "%1")
+  -- Each changelog line is already on its own line in the gist; only trim (hyphens inside a line are kept)
+  return (changelogs:gsub("^%s*(.-)%s*$", "%1"))
 end
 
 local function versionCheck()
@@ -83,7 +82,7 @@ Latest Version: %s
   end, 'GET', '', {
     ['Cache-Control'] = 'no-cache',
     ['Content-Type'] = 'application/json',
-    ['User-Agent'] = string.format('force-appearance/%s', currentVersion)
+    ['User-Agent'] = string.format('force-sling/%s', currentVersion)
   })
 end
 

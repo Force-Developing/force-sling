@@ -8,7 +8,6 @@ version '1.3.5'
 
 dependencies {
     'ox_lib',
-    '/assetpacks',
 }
 
 shared_scripts {

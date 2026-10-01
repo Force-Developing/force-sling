@@ -1,6 +1,7 @@
 Utils = {}
 
 local skippedWeapons = {}
+local maxWarned = {}
 
 --- Loads the prop model and weapon asset. Addon weapons aren't preloaded like base game weapons,
 --- and a wrong model in Config.Weapons would otherwise throw and stop the whole weapon thread.
@@ -36,9 +37,14 @@ end
 
 function Utils:CreateAndAttachWeapon(weaponName, weaponVal, coords, playerPed)
   if Sling.currentAttachedAmount >= Config.MaxWeaponsAttached then
-    Debug("warn", "Max weapons attached reached")
+    -- Called every tick for every weapon that doesn't fit, so only warn once per weapon
+    if not maxWarned[weaponName] then
+      maxWarned[weaponName] = true
+      Debug("warn", ("Max weapons attached reached (%d), not showing %s"):format(Config.MaxWeaponsAttached, weaponName))
+    end
     return false
   end
+  maxWarned[weaponName] = nil
 
   if not weaponVal or not weaponVal.name then
     Debug("error", "Invalid weapon data")
@@ -63,8 +69,15 @@ function Utils:CreateAndAttachWeapon(weaponName, weaponVal, coords, playerPed)
   for _, component in pairs(weaponVal.attachments or {}) do
     GiveWeaponComponentToWeaponObject(weaponObject, component)
   end
+  -- The placeholder is networked because it is what other players see. Servers with
+  -- sv_entityLockdown block client-created networked entities; fall back to a local one so the
+  -- player at least sees their own sling.
   local placeholder = CreateObjectNoOffset(weaponVal.model, coords.coords.x, coords.coords.y, coords.coords.z, true,
     true, false)
+  if not placeholder or placeholder == 0 or not DoesEntityExist(placeholder) then
+    placeholder = CreateObjectNoOffset(weaponVal.model, coords.coords.x, coords.coords.y, coords.coords.z, false,
+      true, false)
+  end
   SetEntityCollision(placeholder, false, false)
   SetEntityAlpha(placeholder, 0, false)
   AttachEntityToEntity(placeholder, playerPed, GetPedBoneIndex(playerPed, (coords.boneId or DEFAULT_BONE)),

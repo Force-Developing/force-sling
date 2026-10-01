@@ -38,11 +38,6 @@ AddEventHandler("onResourceStop", function(resource)
   Debug("info", "Resource stopped: " .. resource)
 end)
 
-AddEventHandler('playerDropped', function()
-  cleanupEntities()
-  Debug("info", "Player dropped")
-end)
-
 --- A preset was saved by an admin. Rebuild the prop unless the player has their own position for it.
 RegisterNetEvent("force-sling:client:presetUpdated", function(weaponName, preset)
   if type(weaponName) ~= "string" or type(preset) ~= "table" or type(preset.coords) ~= "table" then return end
