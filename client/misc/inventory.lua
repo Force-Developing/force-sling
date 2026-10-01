@@ -32,6 +32,29 @@ function Inventory:GetWeapons(userInventory)
   return weapons
 end
 
+local oxComponentHashes = {}
+
+--- ox_inventory stores attachments as component item names (metadata.components = { "at_flashlight" }).
+--- The item's client.component lists one hash per weapon family; pick the one this weapon accepts.
+--- @return number|nil
+local function GetOxComponentHash(componentName, weaponHash)
+  local hashes = oxComponentHashes[componentName]
+  if hashes == nil then
+    local ok, itemData = pcall(function() return exports.ox_inventory:Items(componentName) end)
+    hashes = ok and type(itemData) == "table" and type(itemData.client) == "table"
+        and type(itemData.client.component) == "table" and itemData.client.component or false
+    oxComponentHashes[componentName] = hashes
+  end
+  if not hashes or not weaponHash then return nil end
+
+  for _, hash in ipairs(hashes) do
+    if DoesWeaponTakeWeaponComponent(weaponHash, hash) then
+      return hash
+    end
+  end
+  return nil
+end
+
 --- Retrieves the attachments for a specific weapon.
 --- @param item string The weapon name.
 --- @param userInventory table|nil Inventory items; fetched when omitted
@@ -50,10 +73,22 @@ function Inventory:GetWeaponAttachment(item, userInventory)
     return components
   end
 
+  item = item:lower()
+  local weapon = Config.Weapons[item]
   for _, v in pairs(userInventory) do
-    if v and v.name and v.name:lower() == item:lower() and v.info and v.info.attachments then
-      for _, attachment in pairs(v.info.attachments) do
-        table.insert(components, attachment.component)
+    if v and v.name and v.name:lower() == item then
+      if v.info and v.info.attachments then
+        for _, attachment in pairs(v.info.attachments) do
+          table.insert(components, attachment.component)
+        end
+      end
+
+      local oxComponents = v.metadata and v.metadata.components
+      if Config.Inventory == "ox_inventory" and type(oxComponents) == "table" then
+        for _, componentName in ipairs(oxComponents) do
+          local hash = GetOxComponentHash(componentName, weapon and weapon.name)
+          if hash then table.insert(components, hash) end
+        end
       end
     end
   end
