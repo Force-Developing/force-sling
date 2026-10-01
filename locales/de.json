@@ -8,5 +8,9 @@
   "rotate": "Drehen",
   "speed": "Geschwindigkeit",
   "confirm": "Bestätigen",
-  "cancel": "Abbrechen"
+  "cancel": "Abbrechen",
+  "commandSling": "Waffenpositionen konfigurieren",
+  "commandReset": "Gespeicherte Position einer Waffe zurücksetzen",
+  "commandPreset": "Standard-Waffenpositionen für alle konfigurieren",
+  "commandResetWeapon": "Waffenname, z. B. weapon_pistol (Standard ist die Waffe in deiner Hand)"
 }

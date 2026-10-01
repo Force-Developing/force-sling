@@ -8,5 +8,9 @@
   "rotate": "Draaien",
   "speed": "Snelheid",
   "confirm": "Bevestigen",
-  "cancel": "Annuleren"
+  "cancel": "Annuleren",
+  "commandSling": "Wapenposities instellen",
+  "commandReset": "Opgeslagen positie van een wapen resetten",
+  "commandPreset": "Standaard wapenposities voor iedereen instellen",
+  "commandResetWeapon": "Wapennaam, bijv. weapon_pistol (standaard het wapen in je hand)"
 }

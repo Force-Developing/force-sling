@@ -8,5 +8,9 @@
   "rotate": "Pivoter",
   "speed": "Vitesse",
   "confirm": "Confirmer",
-  "cancel": "Annuler"
+  "cancel": "Annuler",
+  "commandSling": "Configurer la position de vos armes",
+  "commandReset": "Réinitialiser la position enregistrée d'une arme",
+  "commandPreset": "Configurer les positions d'armes par défaut pour tous",
+  "commandResetWeapon": "Nom de l'arme, ex. weapon_pistol (par défaut, l'arme en main)"
 }

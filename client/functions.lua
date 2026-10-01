@@ -359,6 +359,16 @@ function Sling:InitCommands()
     Sling:StartConfiguration(true)
   end, false)
 
+  if hasPermission(Config.Command.permission) then
+    TriggerEvent("chat:addSuggestion", "/" .. Config.Command.name, locale("commandSling"))
+    TriggerEvent("chat:addSuggestion", "/" .. Config.Command.reset, locale("commandReset"), {
+      { name = "weapon", help = locale("commandResetWeapon") }
+    })
+  end
+  if hasPermission(Config.Presets.permission) then
+    TriggerEvent("chat:addSuggestion", "/" .. Config.Presets.command, locale("commandPreset"))
+  end
+
   Debug("info", "Commands initialized")
 end
 

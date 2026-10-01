@@ -8,5 +8,9 @@
   "rotate": "Girar",
   "speed": "Velocidad",
   "confirm": "Confirmar",
-  "cancel": "Cancelar"
+  "cancel": "Cancelar",
+  "commandSling": "Configurar las posiciones de tus armas",
+  "commandReset": "Restablecer la posición guardada de un arma",
+  "commandPreset": "Configurar las posiciones predeterminadas de las armas para todos",
+  "commandResetWeapon": "Nombre del arma, p. ej. weapon_pistol (por defecto, el arma en tu mano)"
 }

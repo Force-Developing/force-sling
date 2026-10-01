@@ -8,5 +8,9 @@
   "rotate": "Rotate",
   "speed": "Speed",
   "confirm": "Confirm",
-  "cancel": "Cancel"
+  "cancel": "Cancel",
+  "commandSling": "Configure your weapon positions",
+  "commandReset": "Reset your saved position for a weapon",
+  "commandPreset": "Configure the default weapon positions for everyone",
+  "commandResetWeapon": "Weapon name, e.g. weapon_pistol (defaults to the weapon in your hand)"
 }

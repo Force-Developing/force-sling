@@ -30,6 +30,27 @@ function NormalizeWeaponConfig()
   Config.Weapons = weapons
 end
 
+--- Loads the configured locale. "auto" follows the replicated ox:locale convar (setr ox:locale "sv").
+--- Region codes such as "pt-BR" fall back to "pt", and anything without a locale file to "en".
+function InitLocale()
+  local key = Config.Locale
+  if type(key) ~= "string" or key == "auto" then
+    key = GetConvar("ox:locale", "en")
+  end
+
+  local resource = GetCurrentResourceName()
+  local function hasLocale(name)
+    return name and LoadResourceFile(resource, ("locales/%s.json"):format(name)) ~= nil
+  end
+
+  if not hasLocale(key) then
+    local language = key:match("^(%a+)")
+    key = hasLocale(language) and language or "en"
+  end
+
+  lib.locale(key)
+end
+
 function InitFramework()
   if Config.Framework.name ~= "auto" then return end
   local frameworks = {

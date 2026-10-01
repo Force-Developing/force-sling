@@ -8,5 +8,9 @@
   "rotate": "تدوير",
   "speed": "السرعة",
   "confirm": "تأكيد",
-  "cancel": "إلغاء"
+  "cancel": "إلغاء",
+  "commandSling": "تكوين مواضع أسلحتك",
+  "commandReset": "إعادة تعيين الموضع المحفوظ لسلاح",
+  "commandPreset": "تكوين المواضع الافتراضية للأسلحة للجميع",
+  "commandResetWeapon": "اسم السلاح، مثل weapon_pistol (الافتراضي هو السلاح في يدك)"
 }

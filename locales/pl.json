@@ -8,5 +8,9 @@
   "rotate": "Obróć",
   "speed": "Prędkość",
   "confirm": "Potwierdź",
-  "cancel": "Anuluj"
+  "cancel": "Anuluj",
+  "commandSling": "Skonfiguruj pozycje broni",
+  "commandReset": "Zresetuj zapisaną pozycję broni",
+  "commandPreset": "Skonfiguruj domyślne pozycje broni dla wszystkich",
+  "commandResetWeapon": "Nazwa broni, np. weapon_pistol (domyślnie broń w ręce)"
 }

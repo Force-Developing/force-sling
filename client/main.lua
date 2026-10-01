@@ -1,4 +1,4 @@
-lib.locale(Config.Locale);
+InitLocale()
 
 InitFramework()
 InitInventory()
