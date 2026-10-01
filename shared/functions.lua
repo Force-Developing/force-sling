@@ -63,10 +63,14 @@ function InitFramework()
   for _, framework in ipairs(frameworks) do
     if IsResourceStartingOrStarted(framework.resource) then
       Config.Framework = framework
+      Debug("info", "Framework initialized: " .. framework.name)
       return
     end
   end
-  Debug("info", "Framework initialized: " .. Config.Framework.name)
+
+  Config.Framework.name = "custom"
+  lib.print.warn("No supported framework (es_extended, qbx_core, qb-core) is started, falling back to \"custom\". " ..
+    "Start force-sling after your framework or set Config.Framework.name and edit client/custom/frameworks/custom.lua.")
 end
 
 function InitInventory()

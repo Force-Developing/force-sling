@@ -4,24 +4,24 @@ end
 
 Framework = {};
 
+--- Called every 100 ms until it returns true; the sling starts after that.
+--- TODO: replace with your framework's "character loaded" check. The default works for frameworks
+--- that set LocalPlayer.state.isLoggedIn and otherwise starts right away.
 function IsPlayerLoaded()
-  return ESX.IsPlayerLoaded();
+  return LocalPlayer.state.isLoggedIn ~= false
 end
 
-RegisterNetEvent("esx:addInventoryItem")
-AddEventHandler("esx:addInventoryItem", function(item)
-  item = item:lower()
-  for k, v in pairs(Config.Weapons) do
-    if item == k then
-      Sling.cachedWeapons[item] = v
-      Sling.cachedWeapons[item].attachments = Inventory:GetWeaponAttachment(item)
-      break;
-    end
-  end
-end)
-
-RegisterNetEvent("esx:removeInventoryItem")
-AddEventHandler("esx:removeInventoryItem", function(item)
-  -- WeaponThread removes the prop once the weapon is gone from cachedWeapons
-  Sling.cachedWeapons[item:lower()] = nil
-end)
+--- Optional. Return the items in the player's data (a list of tables with a .name field, e.g.
+--- { { name = "weapon_pistol" } }) when Config.Inventory is "none". Return nil to manage
+--- Sling.cachedWeapons yourself through events, for example:
+---
+---   RegisterNetEvent("myframework:weaponAdded", function(name)
+---     name = name:lower()
+---     if Config.Weapons[name] then Sling.cachedWeapons[name] = Config.Weapons[name] end
+---   end)
+---   RegisterNetEvent("myframework:weaponRemoved", function(name)
+---     Sling.cachedWeapons[name:lower()] = nil -- the prop is removed on the next tick
+---   end)
+function GetFrameworkItems()
+  return nil
+end

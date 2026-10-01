@@ -41,6 +41,11 @@ function Inventory:GetWeaponAttachment(item, userInventory)
   local components = {}
   userInventory = userInventory or self:GetUserInventory()
 
+  if Config.Inventory == "custom" then
+    local custom = SafeInventoryCall(function() return CustomInventory:GetWeaponAttachment(item, userInventory) end)
+    if custom then return custom end
+  end
+
   if not userInventory then
     return components
   end
@@ -68,9 +73,9 @@ function Inventory:GetUserInventory()
   elseif Config.Inventory == "tgiann-inventory" then
     return SafeInventoryCall(function() return exports['tgiann-inventory']:GetPlayerItems() end)
   elseif Config.Inventory == "custom" then
-    return CustomInventory:GetWeapons()
+    return SafeInventoryCall(function() return CustomInventory:GetWeapons() end)
   elseif GetFrameworkItems then
-    -- qb-inventory and other inventories that store items in the QBCore/QBX player data
+    -- "none"/qb-inventory: items stored in the framework player data (QBCore/QBX items, ESX loadout)
     return SafeInventoryCall(GetFrameworkItems)
   end
   return nil
