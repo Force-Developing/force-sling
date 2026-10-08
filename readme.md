@@ -59,6 +59,8 @@ Before setting up the resource, ensure that you have the following dependency in
      Config.Framework.name = "auto" -- Or set it: "esx", "qbcore", "qbx" or "custom".
      Config.Inventory = "auto" -- Or set it: "ox_inventory", "qs-inventory", "none", etc.
      ```
+   - With `"auto"` the server detects the framework and inventory and passes the result to every client, so the start order in `server.cfg` doesn't matter. A framework that is installed but not started yet is waited for, with a red "Waiting for the framework" line every 10 seconds.
+   - Custom frameworks: put your code inside the `RegisterFramework("custom", function() ... end)` block in `client/custom/frameworks/custom.lua`.
 
 4. **Add to Server Config**
 
