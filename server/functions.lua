@@ -28,9 +28,10 @@ function WriteJsonFile(path, data)
 end
 
 --- Shipped presets with the in-game saved ones layered on top, per weapon.
+--- Invalid entries (hand edits, json null) are left out.
 function GetPresets()
-  local presets = ReadJsonFile(PRESETS_FILE)
-  for weaponName, preset in pairs(ReadJsonFile(CUSTOM_PRESETS_FILE)) do
+  local presets = NormalizePositions(ReadJsonFile(PRESETS_FILE))
+  for weaponName, preset in pairs(NormalizePositions(ReadJsonFile(CUSTOM_PRESETS_FILE))) do
     presets[weaponName] = preset
   end
   return presets
@@ -60,7 +61,7 @@ function Sling:LoadServerCallbacks()
     ["force-sling:callback:getCachedPositions"] = function(source)
       local identifier = GetPlayerIdentifierByType(source, "license")
       Debug("info", "Returning cached positions for identifier: " .. tostring(identifier))
-      return identifier and ReadJsonFile(POSITIONS_FILE)[identifier] or {}
+      return identifier and NormalizePositions(ReadJsonFile(POSITIONS_FILE)[identifier]) or {}
     end,
     ["force-sling:callback:getCachedPresets"] = function()
       Debug("info", "Returning cached presets")
@@ -73,12 +74,13 @@ function Sling:LoadServerCallbacks()
       local positions, valid = ReadJsonFile(POSITIONS_FILE)
       local weaponName = GetConfiguredWeaponName(weapon)
       if not identifier or not weaponName or not valid or not Admin:HasPermission(source, Config.Command.permission) then
-        return identifier and positions[identifier] or {}
+        return identifier and NormalizePositions(positions[identifier]) or {}
       end
-      positions[identifier] = positions[identifier] or {}
+      -- json null decodes to a (truthy) function, so check the type
+      if type(positions[identifier]) ~= "table" then positions[identifier] = {} end
       positions[identifier][weaponName] = nil
       WriteJsonFile(POSITIONS_FILE, positions)
-      return positions[identifier]
+      return NormalizePositions(positions[identifier])
     end
   }
 

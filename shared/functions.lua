@@ -32,6 +32,43 @@ end
 
 --- Loads the configured locale. "auto" follows the replicated ox:locale convar (setr ox:locale "sv").
 --- Region codes such as "pt-BR" fall back to "pt", and anything without a locale file to "en".
+local function toFiniteNumber(value)
+  value = tonumber(value)
+  if not value or value ~= value or value == math.huge or value == -math.huge then return nil end
+  return value
+end
+
+local function toVector(value)
+  local valueType = type(value)
+  if valueType ~= "table" and valueType ~= "vector3" then return nil end
+  local x, y, z = toFiniteNumber(value.x), toFiniteNumber(value.y), toFiniteNumber(value.z)
+  if not x or not y or not z then return nil end
+  return { x = x + 0.0, y = y + 0.0, z = z + 0.0 }
+end
+
+--- Validates one saved position or preset ({ coords = {x,y,z}, rot = {x,y,z}, boneId = n }). JSON files can be
+--- edited by hand (json null decodes to a truthy function), so every entry is checked before it is used.
+--- @return table|nil entry A clean copy, or nil when it can't be used
+function NormalizePosition(entry)
+  if type(entry) ~= "table" then return nil end
+  local coords, rot = toVector(entry.coords), toVector(entry.rot)
+  if not coords or not rot then return nil end
+  local boneId = toFiniteNumber(entry.boneId)
+  return { coords = coords, rot = rot, boneId = boneId and math.floor(boneId) or 24816 }
+end
+
+--- NormalizePosition for every weapon in a { [weaponName] = entry } table; invalid entries are dropped.
+--- @return table
+function NormalizePositions(entries)
+  local result = {}
+  if type(entries) ~= "table" then return result end
+  for weaponName, entry in pairs(entries) do
+    local clean = type(weaponName) == "string" and NormalizePosition(entry)
+    if clean then result[weaponName:lower()] = clean end
+  end
+  return result
+end
+
 function InitLocale()
   local key = Config.Locale
   if type(key) ~= "string" or key == "auto" then

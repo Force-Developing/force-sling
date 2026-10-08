@@ -58,10 +58,20 @@ local function selectBone(index)
   selectData.boneId = menuBones[index] and Config.Bones[menuBones[index]] or DEFAULT_BONE
 end
 
+--- Loads the player's saved positions and the presets from the server. Entries are validated, so a hand-edited
+--- or broken JSON file can't stop the weapon thread.
+function Sling:LoadPositions()
+  local ok, positions = pcall(lib.callback.await, "force-sling:callback:getCachedPositions", false)
+  if ok then Sling.cachedPositions = NormalizePositions(positions) end
+  local okPresets, presets = pcall(lib.callback.await, "force-sling:callback:getCachedPresets", false)
+  if okPresets then Sling.cachedPresets = NormalizePositions(presets) end
+  if not ok or not okPresets then
+    lib.print.error("Loading sling positions failed: " .. tostring(not ok and positions or presets))
+  end
+end
+
 function Sling:InitSling()
-  local libCallbackAwait = lib.callback.await
-  Sling.cachedPositions = libCallbackAwait("force-sling:callback:getCachedPositions", false)
-  Sling.cachedPresets = libCallbackAwait("force-sling:callback:getCachedPresets", false)
+  Sling:LoadPositions()
   Sling:WeaponThread()
 
   -- Sorted so the menu order is stable (pairs order is random)
@@ -115,6 +125,33 @@ function Sling:SyncWeapons()
   Sling.cachedWeapons = Inventory:GetWeapons(inventory)
 end
 
+local lastTickError
+
+function Sling:WeaponTick()
+  Sling:SyncWeapons()
+
+  -- Not cache.ped: it still holds the old, deleted ped for up to 100 ms after a model change
+  local playerPed = PlayerPedId()
+  local selectedWeapon = GetSelectedPedWeapon(playerPed)
+
+  -- Remove props for weapons that are in hand, no longer owned, or attached to an old ped (model change)
+  for weaponName, attachment in pairs(Sling.cachedAttachments) do
+    local weaponVal = Sling.cachedWeapons[weaponName]
+    if not weaponVal or selectedWeapon == weaponVal.name
+        or not DoesEntityExist(attachment.obj)
+        or not IsEntityAttachedToEntity(attachment.placeholder, playerPed) then
+      Utils:DeleteWeapon(weaponName)
+    end
+  end
+
+  for weaponName, weaponVal in pairs(Sling.cachedWeapons) do
+    if selectedWeapon ~= weaponVal.name and not Sling.cachedAttachments[weaponName] then
+      local coords = Sling.cachedPositions[weaponName] or Sling.cachedPresets[weaponName] or DEFAULT_POSITION
+      Utils:CreateAndAttachWeapon(weaponName, weaponVal, coords, playerPed)
+    end
+  end
+end
+
 function Sling:WeaponThread()
   CreateThread(function()
     while true do
@@ -122,26 +159,11 @@ function Sling:WeaponThread()
         Wait(1000)
       end
 
-      Sling:SyncWeapons()
-
-      local playerPed = cache.ped
-      local selectedWeapon = GetSelectedPedWeapon(playerPed)
-
-      -- Remove props for weapons that are in hand, no longer owned, or attached to an old ped (model change)
-      for weaponName, attachment in pairs(Sling.cachedAttachments) do
-        local weaponVal = Sling.cachedWeapons[weaponName]
-        if not weaponVal or selectedWeapon == weaponVal.name
-            or not DoesEntityExist(attachment.obj)
-            or not IsEntityAttachedToEntity(attachment.placeholder, playerPed) then
-          Utils:DeleteWeapon(weaponName)
-        end
-      end
-
-      for weaponName, weaponVal in pairs(Sling.cachedWeapons) do
-        if selectedWeapon ~= weaponVal.name and not Sling.cachedAttachments[weaponName] then
-          local coords = Sling.cachedPositions[weaponName] or Sling.cachedPresets[weaponName] or DEFAULT_POSITION
-          Utils:CreateAndAttachWeapon(weaponName, weaponVal, coords, playerPed)
-        end
+      -- One bad weapon or inventory entry must not end the thread (no more props until a restart)
+      local ok, err = pcall(Sling.WeaponTick, Sling)
+      if not ok and err ~= lastTickError then
+        lastTickError = err
+        lib.print.error("Weapon sync failed: " .. tostring(err))
       end
 
       Wait(1000)
@@ -162,13 +184,16 @@ function Sling:OnPositioningDone(coords, selectData)
   end
   TriggerServerEvent("force-sling:server:saveWeaponPosition", coords.position, coords.rotation, weapon,
     selectData.weaponName, selectData.boneId, Sling.isPreset)
-  -- Presets reach every client through force-sling:client:presetUpdated; update ours right away
-  local target = Sling.isPreset and Sling.cachedPresets or Sling.cachedPositions
-  target[selectData.weaponName] = {
-    coords = coords.position,
-    rot = coords.rotation,
-    boneId = selectData.boneId
-  }
+  -- Presets come back to every client (us included) through force-sling:client:presetUpdated once the server
+  -- accepted them. A personal position is used right away; force-sling:client:saveRejected reloads it if the
+  -- server refused it (no permission, throttled).
+  if not Sling.isPreset then
+    Sling.cachedPositions[selectData.weaponName] = NormalizePosition({
+      coords = coords.position,
+      rot = coords.rotation,
+      boneId = selectData.boneId
+    })
+  end
   -- Recreated by WeaponThread with the new position
   Utils:DeleteWeapon(selectData.weaponName)
   DeleteObject(Sling.object)
@@ -232,7 +257,8 @@ function Sling:StartPositioning(data)
         z = lib.math.clamp(z + delta, -POSITION_CLAMP, POSITION_CLAMP)
       end
       coords.position = vec3(x, y, z)
-      AttachEntityToEntity(Sling.object, cache.ped, GetPedBoneIndex(cache.ped, selectData.boneId),
+      local ped = PlayerPedId()
+      AttachEntityToEntity(Sling.object, ped, GetPedBoneIndex(ped, selectData.boneId),
         coords.position.x, coords.position.y, coords.position.z,
         coords.rotation.x, coords.rotation.y, coords.rotation.z,
         true, true, false, true, 2, true)
@@ -248,7 +274,8 @@ function Sling:StartPositioning(data)
         z = z + delta
       end
       coords.rotation = vec3(x, y, z)
-      AttachEntityToEntity(Sling.object, cache.ped, GetPedBoneIndex(cache.ped, selectData.boneId),
+      local ped = PlayerPedId()
+      AttachEntityToEntity(Sling.object, ped, GetPedBoneIndex(ped, selectData.boneId),
         coords.position.x, coords.position.y, coords.position.z,
         coords.rotation.x, coords.rotation.y, coords.rotation.z,
         true, true, false, true, 2, true)
@@ -264,7 +291,8 @@ function Sling:StartPositioning(data)
         end
 
         Sling.object = CreateObject(selectData.weapon, 0, 0, 0, false, true, false)
-        AttachEntityToEntity(Sling.object, cache.ped, GetPedBoneIndex(cache.ped, selectData.boneId), coords.position.x,
+        local ped = PlayerPedId()
+        AttachEntityToEntity(Sling.object, ped, GetPedBoneIndex(ped, selectData.boneId), coords.position.x,
           coords.position.y, coords.position.z, coords.rotation.x, coords.rotation.y, coords.rotation.z, true, true,
           false, true, 2, true)
         SetEntityCollision(Sling.object, false, false)
@@ -396,7 +424,10 @@ function Sling:InitCommands()
         end
       end
     end
-    Sling.cachedPositions = lib.callback.await("force-sling:callback:resetWeaponPositions", false, weapon)
+    local ok, positions = pcall(lib.callback.await, "force-sling:callback:resetWeaponPositions", false, weapon)
+    if ok and type(positions) == "table" then
+      Sling.cachedPositions = NormalizePositions(positions)
+    end
     Utils:DeleteWeapon(weapon)
   end, false)
 
