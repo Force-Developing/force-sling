@@ -402,19 +402,26 @@ end)
 function Sling:InitCommands()
   Debug("info", "Initializing commands")
   -- false for regular players, otherwise the admin type (e.g. "global")
-  local admin = lib.callback.await("force-sling:callback:isPlayerAdmin", false)
+  local function fetchAdmin()
+    local ok, result = pcall(lib.callback.await, "force-sling:callback:isPlayerAdmin", false)
+    return ok and result or false
+  end
+  local admin = fetchAdmin()
 
-  local function hasPermission(permission)
-    return permission == "any" or (admin and admin == permission)
+  --- @param fresh boolean|nil ask the server again (an ace granted after joining counts right away)
+  local function hasPermission(permission, fresh)
+    if permission == "any" then return true end
+    if fresh then admin = fetchAdmin() end
+    return admin and admin == permission
   end
 
   RegisterCommand(Config.Command.name, function(source, args, raw)
-    if not hasPermission(Config.Command.permission) then return end
+    if not hasPermission(Config.Command.permission, true) then return end
     Sling:StartConfiguration(false)
   end, false)
 
   RegisterCommand(Config.Command.reset, function(source, args, raw)
-    if not hasPermission(Config.Command.permission) then return end
+    if not hasPermission(Config.Command.permission, true) then return end
     local weapon = args[1] and args[1]:lower() or GetSelectedPedWeapon(cache.ped)
     if type(weapon) == "number" then
       for weaponName, weaponVal in pairs(Sling.cachedWeapons) do
@@ -432,7 +439,7 @@ function Sling:InitCommands()
   end, false)
 
   RegisterCommand(Config.Presets.command, function(source, args, raw)
-    if not hasPermission(Config.Presets.permission) then return end
+    if not hasPermission(Config.Presets.permission, true) then return end
     Sling:StartConfiguration(true)
   end, false)
 
