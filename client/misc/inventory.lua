@@ -41,7 +41,9 @@ local function GetOxComponentHash(componentName, weaponHash)
   local hashes = oxComponentHashes[componentName]
   if hashes == nil then
     local ok, itemData = pcall(function() return exports.ox_inventory:Items(componentName) end)
-    hashes = ok and type(itemData) == "table" and type(itemData.client) == "table"
+    -- A failed call (ox_inventory not started on this client yet) is retried next time instead of cached
+    if not ok then return nil end
+    hashes = type(itemData) == "table" and type(itemData.client) == "table"
         and type(itemData.client.component) == "table" and itemData.client.component or false
     oxComponentHashes[componentName] = hashes
   end

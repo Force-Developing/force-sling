@@ -6,11 +6,16 @@ local maxWarned = {}
 --- Loads the prop model and weapon asset. Addon weapons aren't preloaded like base game weapons,
 --- and a wrong model in Config.Weapons would otherwise throw and stop the whole weapon thread.
 --- @return boolean
-function Utils:LoadWeaponAssets(weaponName, weaponVal)
-  if skippedWeapons[weaponName] then return false end
+local LOAD_TIMEOUT_MS = 5000
+local LOAD_RETRY_MS = 60000
 
-  local function skip(reason)
-    skippedWeapons[weaponName] = true
+function Utils:LoadWeaponAssets(weaponName, weaponVal)
+  local skipped = skippedWeapons[weaponName]
+  if skipped == true or (skipped and GetGameTimer() < skipped) then return false end
+
+  --- @param retry boolean A streaming timeout is retried later; a model that doesn't exist never is
+  local function skip(reason, retry)
+    skippedWeapons[weaponName] = retry and GetGameTimer() + LOAD_RETRY_MS or true
     lib.print.warn(("Skipping %s: %s. Check its entry in Config.Weapons and that the addon weapon is streamed.")
       :format(weaponName, reason))
     return false
@@ -19,19 +24,22 @@ function Utils:LoadWeaponAssets(weaponName, weaponVal)
   if not weaponVal.model or not IsModelInCdimage(weaponVal.model) then
     return skip("model not found")
   end
-  if not pcall(lib.requestModel, weaponVal.model) then
-    return skip("model failed to load")
+  -- lib.requestModel throws on timeout (30 s by default); a shorter timeout keeps the weapon tick responsive
+  if not pcall(lib.requestModel, weaponVal.model, LOAD_TIMEOUT_MS) then
+    return skip("model failed to load", true)
   end
 
   RequestWeaponAsset(weaponVal.name, 31, 0)
-  local timeout = GetGameTimer() + 5000
+  local timeout = GetGameTimer() + LOAD_TIMEOUT_MS
   while not HasWeaponAssetLoaded(weaponVal.name) and GetGameTimer() < timeout do
     Wait(10)
   end
   if not HasWeaponAssetLoaded(weaponVal.name) then
-    return skip("weapon asset failed to load")
+    SetModelAsNoLongerNeeded(weaponVal.model)
+    return skip("weapon asset failed to load", true)
   end
 
+  skippedWeapons[weaponName] = nil
   return true
 end
 
