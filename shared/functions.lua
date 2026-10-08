@@ -13,7 +13,13 @@ function Debug(level, message, ...)
   }
 
   local fn = levels[level] or levels.info
-  fn(string.format(message, ...))
+  message = tostring(message)
+  -- Only format with arguments: messages often embed error text that can contain '%'
+  if select("#", ...) > 0 then
+    local ok, formatted = pcall(string.format, message, ...)
+    if ok then message = formatted end
+  end
+  fn(message)
 end
 
 --- Addon weapons are often added with uppercase keys ("WEAPON_M4") or string names/models.
