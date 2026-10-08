@@ -80,8 +80,10 @@ function GetConfiguredWeaponName(weaponName)
   return Config.Weapons[weaponName] and weaponName or nil
 end
 
-local function reject(src, reason)
-  lib.print.warn(("Rejected sling position from player %s: %s"):format(src, reason))
+local function reject(src, reason, weaponName)
+  if reason then lib.print.warn(("Rejected sling position from player %s: %s"):format(src, reason)) end
+  -- The client already shows the new position; let it reload what is saved
+  TriggerClientEvent("force-sling:client:saveRejected", src, type(weaponName) == "string" and weaponName or nil)
 end
 
 --- @param coords table The coordinates of the weapon.
@@ -95,13 +97,17 @@ RegisterNetEvent("force-sling:server:saveWeaponPosition", function(coords, rot, 
   local src = source
 
   local now = GetGameTimer()
-  if lastSave[src] and now - lastSave[src] < SAVE_COOLDOWN_MS then return end
+  if lastSave[src] and now - lastSave[src] < SAVE_COOLDOWN_MS then
+    -- not logged: a client spamming the event would flood the console
+    return reject(src, nil, weaponName)
+  end
   lastSave[src] = now
 
   isPreset = isPreset == true
   local permission = isPreset and Config.Presets.permission or Config.Command.permission
   if not Admin:HasPermission(src, permission) then
-    return reject(src, ("missing permission %s for %s"):format(tostring(permission), isPreset and "presets" or "positions"))
+    return reject(src, ("missing permission %s for %s"):format(tostring(permission), isPreset and "presets" or "positions"),
+      weaponName)
   end
 
   local configuredName = GetConfiguredWeaponName(weaponName)
@@ -112,11 +118,11 @@ RegisterNetEvent("force-sling:server:saveWeaponPosition", function(coords, rot, 
   local position = sanitizeVector(coords, clampPosition)
   local rotation = sanitizeVector(rot, wrapRotation)
   if not position or not rotation then
-    return reject(src, "invalid coords or rotation")
+    return reject(src, "invalid coords or rotation", configuredName)
   end
 
   if not isConfiguredBone(boneId) then
-    return reject(src, ("bone %s is not in Config.Bones"):format(tostring(boneId)))
+    return reject(src, ("bone %s is not in Config.Bones"):format(tostring(boneId)), configuredName)
   end
 
   local entry = { coords = position, rot = rotation, boneId = tonumber(boneId) }
@@ -125,7 +131,7 @@ RegisterNetEvent("force-sling:server:saveWeaponPosition", function(coords, rot, 
   if not isPreset then
     local identifier = GetPlayerIdentifierByType(src, "license")
     if not identifier then
-      return reject(src, "no license identifier")
+      return reject(src, "no license identifier", configuredName)
     end
 
     if SafeSavePosition(POSITIONS_FILE, { [identifier] = { [configuredName] = entry } }) then
