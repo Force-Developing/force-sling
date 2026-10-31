@@ -120,6 +120,17 @@ Refer to the Commands section for a list of available commands and their usage.
 
 ---
 
+## More from Force Developments
+
+Paid resources that pair well with this one. Escrow-protected, documented, with free updates:
+
+- **[Force Burglary](https://forcedevelopments.com/scripts/force-burglary?utm_source=github&utm_medium=readme&utm_campaign=force-sling)**: house robbery system with XP progression.
+- **[Force Blackmarket](https://forcedevelopments.com/scripts/force-blackmarket?utm_source=github&utm_medium=readme&utm_campaign=force-sling)**: black market with player-to-player trading.
+
+Want all of them? [All Resources](https://forcedevelopments.com/scripts/all-resources-1-month?utm_source=github&utm_medium=readme&utm_campaign=force-sling) is a monthly subscription that includes every paid resource. Browse the full catalogue at [forcedevelopments.com](https://forcedevelopments.com/scripts?utm_source=github&utm_medium=readme&utm_campaign=force-sling).
+
+---
+
 ## License
 
 This project is licensed under the GPL License. See the [LICENSE](https://github.com/Force-Developing/force-sling/blob/main/LICENSE) file for more details.
